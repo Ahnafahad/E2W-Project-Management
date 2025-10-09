@@ -2,9 +2,10 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
+import { signIn } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { useAuth } from '@/lib/context'
 
 export function LoginForm() {
   const [isLogin, setIsLogin] = useState(true)
@@ -13,8 +14,7 @@ export function LoginForm() {
   const [name, setName] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
-
-  const { login, register } = useAuth()
+  const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -22,14 +22,45 @@ export function LoginForm() {
     setError('')
 
     try {
-      const result = isLogin
-        ? await login(email, password)
-        : await register(email, password, name)
+      if (isLogin) {
+        // Login with NextAuth
+        const result = await signIn('credentials', {
+          email,
+          password,
+          redirect: false,
+        })
 
-      if (!result.success) {
-        setError(result.error || 'Authentication failed')
+        if (result?.error) {
+          setError(result.error)
+        } else if (result?.ok) {
+          router.push('/dashboard')
+        }
+      } else {
+        // Register new user
+        const response = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password, name }),
+        })
+
+        const data = await response.json()
+
+        if (!response.ok) {
+          setError(data.error || 'Registration failed')
+        } else {
+          // Auto-login after registration
+          const result = await signIn('credentials', {
+            email,
+            password,
+            redirect: false,
+          })
+
+          if (result?.ok) {
+            router.push('/dashboard')
+          }
+        }
       }
-    } catch (error) {
+    } catch (err) {
       setError('An unexpected error occurred')
     } finally {
       setIsLoading(false)
@@ -41,11 +72,18 @@ export function LoginForm() {
     setError('')
 
     try {
-      const result = await login('demo@e2w.global', 'demo123')
-      if (!result.success) {
-        setError(result.error || 'Demo login failed')
+      const result = await signIn('credentials', {
+        email: 'demo@e2w.global',
+        password: 'demo123',
+        redirect: false,
+      })
+
+      if (result?.error) {
+        setError(result.error)
+      } else if (result?.ok) {
+        router.push('/dashboard')
       }
-    } catch (error) {
+    } catch (err) {
       setError('Demo login failed')
     } finally {
       setIsLoading(false)

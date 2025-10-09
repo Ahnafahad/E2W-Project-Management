@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Image from "next/image"
 import Link from "next/link"
+import { signOut } from 'next-auth/react'
 import { Search, Bell, Settings, User, LogOut, ChevronDown, Menu } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useAuth } from '@/lib/context'
@@ -14,12 +15,12 @@ interface HeaderProps {
 }
 
 export function Header({ onMenuClick }: HeaderProps = {}) {
-  const { user, logout } = useAuth()
+  const { user } = useAuth()
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [showGlobalSearch, setShowGlobalSearch] = useState(false)
 
-  const handleLogout = () => {
-    logout()
+  const handleLogout = async () => {
+    await signOut({ callbackUrl: '/' })
     setShowUserMenu(false)
   }
 

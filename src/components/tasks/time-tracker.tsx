@@ -197,7 +197,7 @@ export function TimeTracker({ task, onUpdate }: TimeTrackerProps) {
                   <Pause className="w-4 h-4" />
                   Pause
                 </Button>
-                <Button onClick={stopTracking} variant="outline" className="flex items-center gap-2">
+                <Button onClick={stopTracking} variant="secondary" className="flex items-center gap-2">
                   <Square className="w-4 h-4" />
                   Stop
                 </Button>
@@ -222,7 +222,7 @@ export function TimeTracker({ task, onUpdate }: TimeTrackerProps) {
           <div className="flex items-center justify-between mb-3">
             <h4 className="font-medium">Time Entries</h4>
             <Button
-              variant="outline"
+              variant="secondary"
               size="sm"
               onClick={() => setShowAddEntry(!showAddEntry)}
               className="flex items-center gap-1"

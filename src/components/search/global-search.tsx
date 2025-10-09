@@ -69,13 +69,13 @@ export function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
     allTasks.forEach(task => {
       if (task.deleted) return
 
-      const searchableText = `${task.title} ${task.description} ${task.tags.join(' ')}`.toLowerCase()
+      const searchableText = `${task.title} ${task.description || ''} ${task.tags.join(' ')}`.toLowerCase()
       const matches: string[] = []
 
       searchTerms.forEach(term => {
         if (searchableText.includes(term)) {
           if (task.title.toLowerCase().includes(term)) matches.push('title')
-          if (task.description.toLowerCase().includes(term)) matches.push('description')
+          if (task.description?.toLowerCase().includes(term)) matches.push('description')
           if (task.tags.some(tag => tag.toLowerCase().includes(term))) matches.push('tags')
         }
       })
