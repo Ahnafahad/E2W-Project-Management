@@ -1,12 +1,19 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
+
+type ResultType = {
+  type: 'test' | 'seed' | 'clear' | 'error'
+  data: Record<string, unknown>
+  status?: number
+} | null
 
 export default function SetupPage() {
   const [testing, setTesting] = useState(false)
   const [seeding, setSeeding] = useState(false)
   const [clearing, setClearing] = useState(false)
-  const [result, setResult] = useState<any>(null)
+  const [result, setResult] = useState<ResultType>(null)
 
   const testConnection = async () => {
     setTesting(true)
@@ -16,7 +23,8 @@ export default function SetupPage() {
       const data = await res.json()
       setResult({ type: 'test', data })
     } catch (error: unknown) {
-      setResult({ type: 'error', data: { error: error.message } })
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      setResult({ type: 'error', data: { error: errorMessage } })
     }
     setTesting(false)
   }
@@ -29,7 +37,8 @@ export default function SetupPage() {
       const data = await res.json()
       setResult({ type: 'seed', data, status: res.status })
     } catch (error: unknown) {
-      setResult({ type: 'error', data: { error: error.message } })
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      setResult({ type: 'error', data: { error: errorMessage } })
     }
     setSeeding(false)
   }
@@ -45,7 +54,8 @@ export default function SetupPage() {
       const data = await res.json()
       setResult({ type: 'clear', data })
     } catch (error: unknown) {
-      setResult({ type: 'error', data: { error: error.message } })
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      setResult({ type: 'error', data: { error: errorMessage } })
     }
     setClearing(false)
   }
@@ -130,12 +140,12 @@ export default function SetupPage() {
                     <br />
                     <strong>Password:</strong> demo123
                   </p>
-                  <a
+                  <Link
                     href="/"
                     className="inline-block mt-4 bg-green-600 hover:bg-green-700 text-white font-medium px-4 py-2 rounded-lg transition-colors"
                   >
                     Go to Dashboard →
-                  </a>
+                  </Link>
                 </div>
               )}
             </div>
