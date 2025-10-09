@@ -194,11 +194,11 @@ function ReportsContent() {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <Button variant="outline" onClick={() => exportReport('csv')}>
+            <Button variant="secondary" onClick={() => exportReport('csv')}>
               <Download className="w-4 h-4 mr-2" />
               Export CSV
             </Button>
-            <Button variant="outline" onClick={() => exportReport('json')}>
+            <Button variant="secondary" onClick={() => exportReport('json')}>
               <Download className="w-4 h-4 mr-2" />
               Export JSON
             </Button>
