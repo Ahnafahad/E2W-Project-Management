@@ -7,13 +7,14 @@ import {
   FileX,
   XCircle,
   RefreshCw,
-  Home
+  Home,
+  type LucideIcon
 } from 'lucide-react'
 import { Button } from './button'
 import { cn } from '@/lib/utils'
 
 interface ErrorStateProps {
-  icon?: React.ComponentType<{ className?: string }>
+  icon?: LucideIcon
   title: string
   description?: string
   error?: Error | string
