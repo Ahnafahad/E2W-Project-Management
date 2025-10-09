@@ -82,7 +82,7 @@ function CommentComponent({ comment, onUpdate, level = 0 }: CommentProps) {
     await CommentApi.create(comment.task, {
       content: replyContent.trim(),
       author: user._id,
-      parentComment: comment._id,
+      parent: comment._id,
       mentions: [],
     })
 
@@ -342,11 +342,11 @@ export function TaskDetail({ task, onClose, onTaskUpdate }: TaskDetailProps) {
   }
 
   // Group comments by threads
-  const topLevelComments = comments.filter(comment => !comment.parentComment)
-  const replies = comments.filter(comment => comment.parentComment)
+  const topLevelComments = comments.filter(comment => !comment.parent)
+  const replies = comments.filter(comment => comment.parent)
 
   const getCommentReplies = (commentId: string) => {
-    return replies.filter(reply => reply.parentComment === commentId)
+    return replies.filter(reply => reply.parent === commentId)
   }
 
   return (
