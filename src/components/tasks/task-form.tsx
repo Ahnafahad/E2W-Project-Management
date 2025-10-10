@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Task, TaskStatus, TaskPriority, User } from '@/types'
 import { TaskApi, UserApi } from '@/lib/api'
 import { useAuth, useProjects, useTasks } from '@/lib/context'
-import { FileUpload, FileAttachment } from '@/components/ui/file-upload'
+// import { FileUpload, FileAttachment } from '@/components/ui/file-upload' // Disabled until file storage backend is implemented
 import { X } from 'lucide-react'
 
 interface TaskFormProps {
@@ -52,17 +52,18 @@ export function TaskForm({ task, projectId, onSave, onCancel }: TaskFormProps) {
     fetchTeamMembers()
   }, [])
 
-  const [attachments, setAttachments] = useState<FileAttachment[]>(
-    task?.attachments?.map(att => ({
-      id: att.fileId,
-      name: att.name,
-      size: att.size,
-      type: att.type,
-      data: att.fileId, // fileId stores the base64 data or URL
-      uploadedAt: att.uploadedAt,
-      uploadedBy: 'unknown' // Attachment type doesn't have uploadedBy
-    })) || []
-  )
+  // Disabled until file storage backend is implemented
+  // const [attachments, setAttachments] = useState<FileAttachment[]>(
+  //   task?.attachments?.map(att => ({
+  //     id: att.fileId,
+  //     name: att.name,
+  //     size: att.size,
+  //     type: att.type,
+  //     data: att.fileId, // fileId stores the base64 data or URL
+  //     uploadedAt: att.uploadedAt,
+  //     uploadedBy: 'unknown' // Attachment type doesn't have uploadedBy
+  //   })) || []
+  // )
 
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
@@ -96,13 +97,7 @@ export function TaskForm({ task, projectId, onSave, onCancel }: TaskFormProps) {
         },
         timeEstimate: formData.timeEstimate ? parseInt(String(formData.timeEstimate)) * 60 : undefined, // Convert to minutes
         timeTracked: task?.timeTracked || 0,
-        attachments: attachments.map(att => ({
-          fileId: att.id,
-          name: att.name,
-          size: att.size,
-          type: att.type,
-          uploadedAt: att.uploadedAt
-        })),
+        attachments: task?.attachments || [], // File uploads disabled until backend storage is implemented
         commentCount: task?.commentCount || 0,
         recurring: task?.recurring,
         deleted: false,
@@ -323,11 +318,20 @@ export function TaskForm({ task, projectId, onSave, onCancel }: TaskFormProps) {
               </div>
             </div>
 
-            {/* File Attachments */}
+            {/* File Attachments - Temporarily Disabled */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 File Attachments
               </label>
+              <div className="border border-yellow-200 bg-yellow-50 rounded-lg p-4">
+                <div className="flex items-start gap-2">
+                  <div className="text-yellow-600 text-sm">
+                    <strong>Feature Not Available:</strong> File uploads require backend storage (S3, Vercel Blob, or Cloudinary) to be configured.
+                    This feature is temporarily disabled until file storage is set up.
+                  </div>
+                </div>
+              </div>
+              {/* Commented out until file storage backend is implemented
               <FileUpload
                 files={attachments}
                 onFilesChange={setAttachments}
@@ -336,6 +340,7 @@ export function TaskForm({ task, projectId, onSave, onCancel }: TaskFormProps) {
                 acceptedTypes={['image/*', 'application/pdf', 'text/*', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']}
                 compact
               />
+              */}
             </div>
 
             {error && (

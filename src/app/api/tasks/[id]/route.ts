@@ -66,6 +66,61 @@ export async function PATCH(
     delete body._id
     delete body.dates?.created
 
+    // Handle priorityRank changes
+    if (body.priorityRank !== undefined && body.priorityRank !== currentTask.priorityRank) {
+      // Count active tasks (not deleted, not completed)
+      const activeTasksCount = await Task.countDocuments({
+        deleted: { $ne: true },
+        status: { $ne: 'DONE' }
+      })
+
+      const maxRank = activeTasksCount
+
+      // Validate bounds
+      if (body.priorityRank < 1 || body.priorityRank > maxRank) {
+        return NextResponse.json({
+          success: false,
+          error: `Priority rank must be between 1 and ${maxRank}`,
+        }, { status: 400 })
+      }
+
+      const oldRank = currentTask.priorityRank
+      const newRank = body.priorityRank
+
+      // Adjust ranks of other tasks
+      if (oldRank && newRank) {
+        if (newRank < oldRank) {
+          // Moving up (lower number = higher priority)
+          // Shift tasks down between newRank and oldRank
+          await Task.updateMany(
+            {
+              _id: { $ne: taskId },
+              deleted: { $ne: true },
+              status: { $ne: 'DONE' },
+              priorityRank: { $gte: newRank, $lt: oldRank }
+            },
+            {
+              $inc: { priorityRank: 1 }
+            }
+          )
+        } else {
+          // Moving down (higher number = lower priority)
+          // Shift tasks up between oldRank and newRank
+          await Task.updateMany(
+            {
+              _id: { $ne: taskId },
+              deleted: { $ne: true },
+              status: { $ne: 'DONE' },
+              priorityRank: { $gt: oldRank, $lte: newRank }
+            },
+            {
+              $inc: { priorityRank: -1 }
+            }
+          )
+        }
+      }
+    }
+
     // Update dates
     const updates: Record<string, unknown> = {
       ...body,

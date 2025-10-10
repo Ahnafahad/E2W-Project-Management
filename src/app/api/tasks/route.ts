@@ -98,6 +98,40 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
+    // Validate and handle priorityRank
+    let validatedPriorityRank = priorityRank
+    if (priorityRank !== undefined) {
+      // Count active tasks (not deleted, not completed)
+      const activeTasksCount = await Task.countDocuments({
+        deleted: { $ne: true },
+        status: { $ne: 'DONE' }
+      })
+
+      const maxRank = activeTasksCount + 1 // New task can be 1 to N+1
+
+      // Validate bounds
+      if (priorityRank < 1 || priorityRank > maxRank) {
+        return NextResponse.json({
+          success: false,
+          error: `Priority rank must be between 1 and ${maxRank}`,
+        }, { status: 400 })
+      }
+
+      // If inserting at a rank less than max, shift other tasks down
+      if (priorityRank <= activeTasksCount) {
+        await Task.updateMany(
+          {
+            deleted: { $ne: true },
+            status: { $ne: 'DONE' },
+            priorityRank: { $gte: priorityRank }
+          },
+          {
+            $inc: { priorityRank: 1 }
+          }
+        )
+      }
+    }
+
     // Create task
     const task = await Task.create({
       title,
