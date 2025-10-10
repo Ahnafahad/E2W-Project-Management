@@ -6,6 +6,11 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatDate(date: Date) {
+  // Check if date is valid
+  if (!date || isNaN(date.getTime())) {
+    return 'Invalid date'
+  }
+
   return new Intl.DateTimeFormat('en-US', {
     month: 'short',
     day: 'numeric',
@@ -14,6 +19,11 @@ export function formatDate(date: Date) {
 }
 
 export function formatRelativeTime(date: Date) {
+  // Check if date is valid
+  if (!date || isNaN(date.getTime())) {
+    return 'Invalid date'
+  }
+
   const now = new Date()
   const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
 

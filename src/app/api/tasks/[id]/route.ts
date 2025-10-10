@@ -88,6 +88,11 @@ export async function PATCH(
       { new: true, runValidators: true }
     ).lean()
 
+    // Auto-rerank if task is being marked as DONE or deleted
+    if (body.status === 'DONE' && currentTask.status !== 'DONE' && currentTask.priorityRank) {
+      await reRankTasks(currentTask.priorityRank)
+    }
+
     // Update project stats
     await updateProjectStats(task!.project)
 
@@ -129,6 +134,16 @@ export async function DELETE(
 
     const { id } = await params
 
+    // Get current task to access priorityRank before deletion
+    const currentTask = await Task.findById(id)
+
+    if (!currentTask) {
+      return NextResponse.json({
+        success: false,
+        error: 'Task not found',
+      }, { status: 404 })
+    }
+
     const task = await Task.findByIdAndUpdate(
       id,
       {
@@ -139,15 +154,13 @@ export async function DELETE(
       { new: true }
     )
 
-    if (!task) {
-      return NextResponse.json({
-        success: false,
-        error: 'Task not found',
-      }, { status: 404 })
+    // Auto-rerank tasks after deletion
+    if (currentTask.priorityRank) {
+      await reRankTasks(currentTask.priorityRank)
     }
 
     // Update project stats
-    await updateProjectStats(task.project)
+    await updateProjectStats(task!.project)
 
     return NextResponse.json({
       success: true,
@@ -159,6 +172,25 @@ export async function DELETE(
       success: false,
       error: error instanceof Error ? error.message : 'Failed to delete task',
     }, { status: 500 })
+  }
+}
+
+// Helper function to re-rank tasks after completion or deletion
+async function reRankTasks(removedRank: number) {
+  try {
+    // Find all active tasks (not deleted, not completed) with priorityRank > removedRank
+    await Task.updateMany(
+      {
+        deleted: { $ne: true },
+        status: { $ne: 'DONE' },
+        priorityRank: { $gt: removedRank }
+      },
+      {
+        $inc: { priorityRank: -1 }
+      }
+    )
+  } catch (error) {
+    console.error('Error re-ranking tasks:', error)
   }
 }
 

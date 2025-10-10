@@ -400,7 +400,7 @@ export function TaskDetail({ task, onClose, onTaskUpdate }: TaskDetailProps) {
 
                     const downloadFile = () => {
                       const link = document.createElement('a')
-                      link.href = attachment.data
+                      link.href = attachment.fileId
                       link.download = attachment.name
                       document.body.appendChild(link)
                       link.click()
@@ -409,7 +409,7 @@ export function TaskDetail({ task, onClose, onTaskUpdate }: TaskDetailProps) {
 
                     return (
                       <div
-                        key={attachment.id}
+                        key={attachment.fileId}
                         className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                       >
                         {getFileIcon(attachment.type)}

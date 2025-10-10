@@ -208,7 +208,7 @@ if (typeof window !== 'undefined') {
       // Trigger a background sync if supported
       if ('serviceWorker' in navigator && 'sync' in ServiceWorkerRegistration.prototype) {
         const registration = await navigator.serviceWorker.ready
-        await registration.sync.register('background-sync')
+        await (registration as any).sync.register('background-sync')
       }
     } catch (error) {
       console.error('Error processing offline queue:', error)

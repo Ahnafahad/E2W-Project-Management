@@ -96,7 +96,7 @@ export default function SetupPage() {
                 {seeding ? '⏳ Seeding...' : '🌱 Seed Demo Data'}
               </button>
               <p className="text-sm text-gray-500">
-                Add demo user, projects, and tasks
+                Add team members, projects, and demo tasks
               </p>
             </div>
 
@@ -131,14 +131,16 @@ export default function SetupPage() {
               {result.type === 'seed' && result.status === 201 && (
                 <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
                   <p className="text-green-800 font-medium">
-                    ✅ Demo data created successfully!
+                    ✅ Team members and demo data created successfully!
                   </p>
                   <p className="text-green-700 text-sm mt-2">
-                    You can now login with:
+                    You can now login with any of these team member accounts:
                     <br />
-                    <strong>Email:</strong> demo@e2w.global
+                    <strong>• Ahnaf Ahad:</strong> ahnaf816@gmail.com (Password: 123456)
                     <br />
-                    <strong>Password:</strong> demo123
+                    <strong>• Tanzim Ahmed:</strong> tanzimahmedshofficial@gmail.com (Password: 123456)
+                    <br />
+                    <strong>• Fabiha Fairuz:</strong> fabihafairuz1502@gmail.com (Password: 123456)
                   </p>
                   <Link
                     href="/"
@@ -151,17 +153,30 @@ export default function SetupPage() {
             </div>
           )}
 
-          {/* Demo Credentials */}
+          {/* Team Member Credentials */}
           <div className="mt-8 p-6 bg-blue-50 border border-blue-200 rounded-lg">
             <h3 className="font-semibold text-blue-900 mb-2">
-              📝 Demo Credentials
+              👥 Team Member Credentials
             </h3>
-            <p className="text-blue-800 text-sm">
-              After seeding, use these credentials to login:
+            <p className="text-blue-800 text-sm mb-3">
+              After seeding, use any of these team member accounts to login:
             </p>
-            <div className="mt-2 font-mono text-sm text-blue-900">
-              <div>Email: <strong>demo@e2w.global</strong></div>
-              <div>Password: <strong>demo123</strong></div>
+            <div className="space-y-2 text-sm text-blue-900">
+              <div className="p-2 bg-white rounded">
+                <div><strong>Ahnaf Ahad</strong></div>
+                <div>Email: <span className="font-mono">ahnaf816@gmail.com</span></div>
+                <div>Password: <span className="font-mono">123456</span></div>
+              </div>
+              <div className="p-2 bg-white rounded">
+                <div><strong>Tanzim Ahmed</strong></div>
+                <div>Email: <span className="font-mono">tanzimahmedshofficial@gmail.com</span></div>
+                <div>Password: <span className="font-mono">123456</span></div>
+              </div>
+              <div className="p-2 bg-white rounded">
+                <div><strong>Fabiha Fairuz</strong></div>
+                <div>Email: <span className="font-mono">fabihafairuz1502@gmail.com</span></div>
+                <div>Password: <span className="font-mono">123456</span></div>
+              </div>
             </div>
           </div>
         </div>

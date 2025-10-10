@@ -37,10 +37,12 @@
     "@types/react": "*",
     "@types/react-dom": "*",
     "@types/sharp": "^0.31.1",
+    "autoprefixer": "^10.4.21",
     "eslint": "*",
     "eslint-config-next": "*",
+    "postcss": "^8.5.6",
     "sharp": "^0.34.4",
-    "tailwindcss": "*",
+    "tailwindcss": "^3.4.18",
     "typescript": "*"
   }
 }

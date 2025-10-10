@@ -133,7 +133,7 @@
   },
   "protocol_handlers": [
     {
-      "protocol": "web+e2wpm",
+      "protocol": "web+eewprojectmanager",
       "url": "/protocol-handler?url=%s"
     }
   ],

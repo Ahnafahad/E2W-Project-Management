@@ -274,7 +274,7 @@ function ProjectCard({ project, onEdit, onDelete }: {
               <Users className="w-3 h-3" />
               <span>{project.members.length} member{project.members.length !== 1 ? 's' : ''}</span>
             </div>
-            <span>Updated {formatRelativeTime(new Date(project.updated))}</span>
+            <span>Updated {project.updated ? formatRelativeTime(new Date(project.updated)) : 'recently'}</span>
           </div>
         </div>
       </CardContent>

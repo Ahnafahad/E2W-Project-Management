@@ -187,13 +187,14 @@ export function Sidebar({ onClose }: SidebarProps) {
 
           <nav className="space-y-1">
             {projects.map((project, index) => {
-              const isActive = pathname === `/projects/${project._id}`
+              const isActive = pathname === '/projects'
               const color = projectColors[index % projectColors.length]
 
               return (
                 <Link
                   key={project._id}
-                  href={`/projects/${project._id}`}
+                  href="/projects"
+                  prefetch={false}
                   onClick={onClose} // Close sidebar on mobile when navigating
                   className={cn(
                     "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors",

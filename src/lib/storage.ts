@@ -236,7 +236,7 @@ export class TaskStore {
     )
   }
 
-  static create(taskData: Omit<Task, '_id' | 'dates' | 'commentCount'>): Task {
+  static create(taskData: Omit<Task, '_id' | 'dates' | 'commentCount'> & { dates?: Partial<Task['dates']> }): Task {
     const tasks = this.getAll()
     const newTask: Task = {
       _id: generateId(),
@@ -626,6 +626,13 @@ export function initializeApp(): void {
       watchers: [demoUser._id],
       tags: ['design', 'ui'],
       dates: { due: new Date(Date.now() + 24 * 60 * 60 * 1000) }, // Tomorrow
+      dependencies: [],
+      attachments: [],
+      customFields: {},
+      timeEstimate: undefined,
+      timeTracked: 0,
+      recurring: undefined,
+      deleted: false,
     },
     {
       title: 'Implement user authentication',
@@ -638,6 +645,13 @@ export function initializeApp(): void {
       watchers: [demoUser._id],
       tags: ['backend', 'security'],
       dates: { due: new Date() }, // Today
+      dependencies: [],
+      attachments: [],
+      customFields: {},
+      timeEstimate: undefined,
+      timeTracked: 0,
+      recurring: undefined,
+      deleted: false,
     },
     {
       title: 'Create marketing materials',
@@ -653,6 +667,13 @@ export function initializeApp(): void {
         due: new Date(Date.now() - 24 * 60 * 60 * 1000), // Yesterday
         completed: new Date()
       },
+      dependencies: [],
+      attachments: [],
+      customFields: {},
+      timeEstimate: undefined,
+      timeTracked: 0,
+      recurring: undefined,
+      deleted: false,
     },
   ]
 

@@ -27,8 +27,8 @@ const ActivityLogSchema = new Schema<ActivityLog>(
     timestamps: { createdAt: 'created', updatedAt: false },
     toJSON: {
       transform: (doc, ret) => {
-        ret._id = ret._id.toString()
-        delete ret.__v
+        (ret as any)._id = ret._id.toString()
+        delete (ret as any).__v
         return ret
       },
     },

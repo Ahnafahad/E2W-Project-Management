@@ -19,36 +19,59 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create demo user
-    const hashedPassword = await bcrypt.hash('demo123', 10)
-    const demoUser = await User.create({
-      email: 'demo@e2w.global',
-      name: 'John Doe',
+    // Create team members
+    const hashedPassword = await bcrypt.hash('123456', 10)
+
+    const ahnafAhad = await User.create({
+      email: 'ahnaf816@gmail.com',
+      name: 'Ahnaf Ahad',
       password: hashedPassword,
-      avatar: '/E2W Black Logo.png',
       projectRoles: [],
     })
 
-    // Create demo projects
+    const tanzimAhmed = await User.create({
+      email: 'tanzimahmedshofficial@gmail.com',
+      name: 'Tanzim Ahmed',
+      password: hashedPassword,
+      projectRoles: [],
+    })
+
+    const fatihaFairuz = await User.create({
+      email: 'fabihafairuz1502@gmail.com',
+      name: 'Fabiha Fairuz',
+      password: hashedPassword,
+      projectRoles: [],
+    })
+
+    // Use first team member as the primary user
+    const demoUser = ahnafAhad
+
+    // Create demo projects with all team members
+    const allMembers = [
+      ahnafAhad._id.toString(),
+      tanzimAhmed._id.toString(),
+      fatihaFairuz._id.toString(),
+    ]
+
     const project1 = await Project.create({
       name: 'Website Redesign',
       description: 'Complete redesign of the company website with modern UI/UX',
-      owner: demoUser._id.toString(),
-      members: [demoUser._id.toString()],
+      owner: ahnafAhad._id.toString(),
+      members: allMembers,
     })
 
     const project2 = await Project.create({
       name: 'Mobile App Development',
       description: 'Native mobile app for iOS and Android platforms',
-      owner: demoUser._id.toString(),
-      members: [demoUser._id.toString()],
+      owner: ahnafAhad._id.toString(),
+      members: allMembers,
     })
 
     const project3 = await Project.create({
       name: 'Marketing Campaign',
       description: 'Q4 marketing campaign for product launch',
-      owner: demoUser._id.toString(),
-      members: [demoUser._id.toString()],
+      owner: ahnafAhad._id.toString(),
+      members: allMembers,
     })
 
     // Create demo tasks
@@ -62,9 +85,9 @@ export async function POST(request: NextRequest) {
       status: 'IN_PROGRESS',
       priority: 'HIGH',
       project: project1._id.toString(),
-      assignees: [demoUser._id.toString()],
-      creator: demoUser._id.toString(),
-      watchers: [demoUser._id.toString()],
+      assignees: [fatihaFairuz._id.toString()],
+      creator: ahnafAhad._id.toString(),
+      watchers: allMembers,
       tags: ['design', 'ui'],
       dates: {
         created: now,
@@ -81,9 +104,9 @@ export async function POST(request: NextRequest) {
       status: 'TODO',
       priority: 'URGENT',
       project: project2._id.toString(),
-      assignees: [demoUser._id.toString()],
-      creator: demoUser._id.toString(),
-      watchers: [demoUser._id.toString()],
+      assignees: [tanzimAhmed._id.toString(), ahnafAhad._id.toString()],
+      creator: ahnafAhad._id.toString(),
+      watchers: allMembers,
       tags: ['backend', 'security'],
       dates: {
         created: now,
@@ -100,9 +123,9 @@ export async function POST(request: NextRequest) {
       status: 'DONE',
       priority: 'MEDIUM',
       project: project3._id.toString(),
-      assignees: [demoUser._id.toString()],
-      creator: demoUser._id.toString(),
-      watchers: [demoUser._id.toString()],
+      assignees: [fatihaFairuz._id.toString(), tanzimAhmed._id.toString()],
+      creator: ahnafAhad._id.toString(),
+      watchers: allMembers,
       tags: ['marketing', 'design'],
       dates: {
         created: yesterday,
@@ -155,13 +178,14 @@ export async function POST(request: NextRequest) {
       {
         message: '✅ Database seeded successfully!',
         data: {
-          users: 1,
+          users: 3,
           projects: 3,
           tasks: 3,
-          demoUser: {
-            email: 'demo@e2w.global',
-            password: 'demo123',
-          },
+          teamMembers: [
+            { email: 'ahnaf816@gmail.com', password: '123456', name: 'Ahnaf Ahad' },
+            { email: 'tanzimahmedshofficial@gmail.com', password: '123456', name: 'Tanzim Ahmed' },
+            { email: 'fabihafairuz1502@gmail.com', password: '123456', name: 'Fabiha Fairuz' },
+          ],
         },
       },
       { status: 201 }

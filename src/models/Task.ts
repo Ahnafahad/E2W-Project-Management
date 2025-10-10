@@ -45,6 +45,9 @@ const TaskSchema = new Schema<Task>(
       default: 'MEDIUM',
       required: true,
     },
+    priorityRank: {
+      type: Number, // Global ranking (1 = highest priority)
+    },
     assignees: [{
       type: String,
     }],
@@ -104,8 +107,8 @@ const TaskSchema = new Schema<Task>(
     timestamps: false, // We manage dates manually
     toJSON: {
       transform: (doc, ret) => {
-        ret._id = ret._id.toString()
-        delete ret.__v
+        (ret as any)._id = ret._id.toString()
+        delete (ret as any).__v
         return ret
       },
     },

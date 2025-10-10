@@ -31,6 +31,7 @@ export interface Task {
   description?: string;
   status: TaskStatus;
   priority: TaskPriority;
+  priorityRank?: number; // Global ranking across all projects (1 = highest priority)
   assignees: string[];
   creator: string;
   watchers: string[];

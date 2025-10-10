@@ -42,11 +42,11 @@ const UserSchema = new Schema<User>(
     timestamps: true,
     toJSON: {
       transform: (doc, ret) => {
-        ret._id = ret._id.toString()
-        ret.created = ret.createdAt
-        delete ret.createdAt
-        delete ret.updatedAt
-        delete ret.__v
+        (ret as any)._id = ret._id.toString()
+        ret.created = (ret as any).createdAt
+        delete (ret as any).createdAt
+        delete (ret as any).updatedAt
+        delete (ret as any).__v
         return ret
       },
     },

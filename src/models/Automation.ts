@@ -50,10 +50,10 @@ const AutomationSchema = new Schema<Automation>(
     timestamps: true,
     toJSON: {
       transform: (doc, ret) => {
-        ret._id = ret._id.toString()
-        delete ret.__v
-        delete ret.createdAt
-        delete ret.updatedAt
+        (ret as any)._id = ret._id.toString()
+        delete (ret as any).__v
+        delete (ret as any).createdAt
+        delete (ret as any).updatedAt
         return ret
       },
     },

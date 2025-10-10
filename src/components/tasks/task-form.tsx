@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Task, TaskStatus, TaskPriority } from '@/types'
-import { TaskApi } from '@/lib/api'
-import { useAuth, useProjects } from '@/lib/context'
+import { Task, TaskStatus, TaskPriority, User } from '@/types'
+import { TaskApi, UserApi } from '@/lib/api'
+import { useAuth, useProjects, useTasks } from '@/lib/context'
 import { FileUpload, FileAttachment } from '@/components/ui/file-upload'
 import { X } from 'lucide-react'
 
@@ -19,6 +19,12 @@ interface TaskFormProps {
 export function TaskForm({ task, projectId, onSave, onCancel }: TaskFormProps) {
   const { user } = useAuth()
   const { projects } = useProjects()
+  const { allTasks } = useTasks()
+  const [teamMembers, setTeamMembers] = useState<User[]>([])
+
+  // Calculate available rank positions based on existing non-deleted, non-completed tasks
+  const activeTasks = allTasks.filter(t => t.status !== 'DONE' && !t.deleted)
+  const totalActiveTasksCount = task && task.status !== 'DONE' ? activeTasks.length : activeTasks.length + 1
 
   const [formData, setFormData] = useState({
     title: task?.title || '',
@@ -26,14 +32,36 @@ export function TaskForm({ task, projectId, onSave, onCancel }: TaskFormProps) {
     status: task?.status || 'TODO' as TaskStatus,
     priority: task?.priority || 'MEDIUM' as TaskPriority,
     project: task?.project || projectId || '',
-    assignees: task?.assignees || [user?._id || ''],
+    assignees: task?.assignees || [],
     tags: task?.tags?.join(', ') || '',
     dueDate: task?.dates?.due ? new Date(task.dates.due).toISOString().split('T')[0] : '',
     timeEstimate: task?.timeEstimate ? Math.floor(task.timeEstimate / 60) : '', // Convert to hours
+    priorityRank: task?.priorityRank || totalActiveTasksCount, // Default to last position
   })
 
+  // Fetch team members
+  useEffect(() => {
+    const fetchTeamMembers = async () => {
+      try {
+        const users = await UserApi.getAll()
+        setTeamMembers(users)
+      } catch (error) {
+        console.error('Failed to fetch team members:', error)
+      }
+    }
+    fetchTeamMembers()
+  }, [])
+
   const [attachments, setAttachments] = useState<FileAttachment[]>(
-    task?.attachments || []
+    task?.attachments?.map(att => ({
+      id: att.fileId,
+      name: att.name,
+      size: att.size,
+      type: att.type,
+      data: att.fileId, // fileId stores the base64 data or URL
+      uploadedAt: att.uploadedAt,
+      uploadedBy: 'unknown' // Attachment type doesn't have uploadedBy
+    })) || []
   )
 
   const [isLoading, setIsLoading] = useState(false)
@@ -66,9 +94,15 @@ export function TaskForm({ task, projectId, onSave, onCancel }: TaskFormProps) {
           start: task?.dates?.start,
           completed: task?.dates?.completed,
         },
-        timeEstimate: formData.timeEstimate ? parseInt(formData.timeEstimate) * 60 : undefined, // Convert to minutes
+        timeEstimate: formData.timeEstimate ? parseInt(String(formData.timeEstimate)) * 60 : undefined, // Convert to minutes
         timeTracked: task?.timeTracked || 0,
-        attachments: attachments,
+        attachments: attachments.map(att => ({
+          fileId: att.id,
+          name: att.name,
+          size: att.size,
+          type: att.type,
+          uploadedAt: att.uploadedAt
+        })),
         commentCount: task?.commentCount || 0,
         recurring: task?.recurring,
         deleted: false,
@@ -175,6 +209,37 @@ export function TaskForm({ task, projectId, onSave, onCancel }: TaskFormProps) {
               </div>
             </div>
 
+            {/* Team Members Assignment */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Assign Team Members
+              </label>
+              <div className="border border-gray-200 rounded-lg p-3 space-y-2 max-h-40 overflow-y-auto">
+                {teamMembers.length > 0 ? (
+                  teamMembers.map(member => (
+                    <label key={member._id} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
+                      <input
+                        type="checkbox"
+                        checked={formData.assignees.includes(member._id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setFormData({ ...formData, assignees: [...formData.assignees, member._id] })
+                          } else {
+                            setFormData({ ...formData, assignees: formData.assignees.filter(id => id !== member._id) })
+                          }
+                        }}
+                        className="w-4 h-4 text-gray-900 border-gray-300 rounded focus:ring-gray-900"
+                      />
+                      <span className="text-sm text-gray-700">{member.name}</span>
+                      <span className="text-xs text-gray-500">({member.email})</span>
+                    </label>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">Loading team members...</p>
+                )}
+              </div>
+            </div>
+
             {/* Priority and Due Date Row */}
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -204,6 +269,27 @@ export function TaskForm({ task, projectId, onSave, onCancel }: TaskFormProps) {
                   className="input"
                 />
               </div>
+            </div>
+
+            {/* Priority Ranking */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Priority Rank (Across All Projects)
+              </label>
+              <select
+                value={formData.priorityRank || totalActiveTasksCount}
+                onChange={(e) => setFormData({ ...formData, priorityRank: parseInt(e.target.value) })}
+                className="input"
+              >
+                {Array.from({ length: totalActiveTasksCount }, (_, i) => i + 1).map(rank => (
+                  <option key={rank} value={rank}>
+                    {rank} {rank === 1 ? '(Highest Priority)' : rank === totalActiveTasksCount ? '(Lowest Priority)' : ''}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-gray-500 mt-1">
+                Rank 1 = Highest priority. Total active tasks: {totalActiveTasksCount}
+              </p>
             </div>
 
             {/* Tags and Time Estimate Row */}
