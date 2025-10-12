@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { MainLayout } from "@/components/layout/main-layout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -62,19 +62,54 @@ function getRoleBadge(role: string) {
 function TeamContent() {
   const { user } = useAuth()
   const [searchQuery, setSearchQuery] = useState('')
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([])
+  const [loading, setLoading] = useState(true)
 
-  // Mock team members - in a real app, this would come from your database
-  const teamMembers: TeamMember[] = [
-    {
-      id: user?._id || '1',
-      name: user?.name || 'Current User',
-      email: user?.email || 'user@example.com',
-      role: 'OWNER',
-      joinedAt: '2025-01-01',
-      lastActive: 'Just now',
-    },
-    // Add more mock members if needed
-  ]
+  useEffect(() => {
+    async function fetchUsers() {
+      try {
+        const response = await fetch('/api/users')
+        const data = await response.json()
+
+        if (data.success) {
+          const members: TeamMember[] = data.data.map((u: any) => ({
+            id: u._id,
+            name: u.name,
+            email: u.email,
+            role: u._id === user?._id ? 'OWNER' : 'MEMBER', // Set current user as OWNER, others as MEMBER
+            avatar: u.avatar,
+            joinedAt: new Date(u.created || u.createdAt).toLocaleDateString(),
+            lastActive: u.lastLogin
+              ? formatLastActive(new Date(u.lastLogin))
+              : 'Never',
+          }))
+          setTeamMembers(members)
+        }
+      } catch (error) {
+        console.error('Error fetching users:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    if (user) {
+      fetchUsers()
+    }
+  }, [user])
+
+  function formatLastActive(date: Date) {
+    const now = new Date()
+    const diffInMs = now.getTime() - date.getTime()
+    const diffInMinutes = Math.floor(diffInMs / (1000 * 60))
+    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60))
+    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24))
+
+    if (diffInMinutes < 1) return 'Just now'
+    if (diffInMinutes < 60) return `${diffInMinutes} min ago`
+    if (diffInHours < 24) return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`
+    if (diffInDays < 7) return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`
+    return date.toLocaleDateString()
+  }
 
   const filteredMembers = teamMembers.filter(member =>
     member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -186,7 +221,12 @@ function TeamContent() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {filteredMembers.length > 0 ? (
+              {loading ? (
+                <div className="text-center py-12 text-gray-500">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+                  <p>Loading team members...</p>
+                </div>
+              ) : filteredMembers.length > 0 ? (
                 filteredMembers.map((member) => (
                   <div key={member.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                     <div className="flex items-center gap-4 flex-1">
