@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { MainLayout } from "@/components/layout/main-layout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -19,6 +19,8 @@ import { formatRelativeTime, getInitials } from '@/lib/utils'
 import { AnalyticsCharts } from '@/components/analytics/analytics-charts'
 import { LucideIcon } from 'lucide-react'
 import { PageErrorBoundary } from '@/components/error-boundary'
+import { TaskForm } from '@/components/tasks/task-form'
+import { Task } from '@/types'
 
 interface StatCardProps {
   title: string
@@ -64,7 +66,8 @@ function PriorityBadge({ priority }: { priority: string }) {
 function DashboardContent() {
   const { user } = useAuth()
   const { projects } = useProjects()
-  const { allTasks } = useTasks()
+  const { allTasks, refreshData } = useTasks()
+  const [showTaskForm, setShowTaskForm] = useState(false)
 
   // Calculate stats
   const stats = useMemo(() => {
@@ -158,6 +161,11 @@ function DashboardContent() {
     task.status !== 'DONE'
   ).length
 
+  const handleTaskSave = (task: Task) => {
+    setShowTaskForm(false)
+    refreshData()
+  }
+
   return (
     <MainLayout>
       <div className="space-y-8">
@@ -171,7 +179,7 @@ function DashboardContent() {
               You have {todayTasks} task{todayTasks !== 1 ? 's' : ''} due today
             </p>
           </div>
-          <Button className="w-full sm:w-auto">
+          <Button className="w-full sm:w-auto" onClick={() => setShowTaskForm(true)}>
             <Plus className="w-4 h-4 mr-2" />
             New Task
           </Button>
@@ -278,6 +286,15 @@ function DashboardContent() {
           <AnalyticsCharts tasks={allTasks} projects={projects} />
         </div>
       </div>
+
+      {/* Task Form Modal */}
+      {showTaskForm && (
+        <TaskForm
+          task={null}
+          onSave={handleTaskSave}
+          onCancel={() => setShowTaskForm(false)}
+        />
+      )}
     </MainLayout>
   )
 }

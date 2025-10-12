@@ -1,15 +1,42 @@
 'use client'
 
+import { useState } from 'react'
 import { MainLayout } from "@/components/layout/main-layout"
 import { AuthWrapper } from "@/components/auth/auth-wrapper"
 import { PageErrorBoundary } from '@/components/error-boundary'
 import { CalendarView } from '@/components/tasks/calendar-view'
+import { TaskForm } from '@/components/tasks/task-form'
+import { TaskDetail } from '@/components/tasks/task-detail'
 import { useTasks } from '@/lib/context'
 import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Task } from '@/types'
 
 function CalendarContent() {
-  const { allTasks } = useTasks()
+  const { allTasks, refreshData } = useTasks()
+  const [showTaskForm, setShowTaskForm] = useState(false)
+  const [editingTask, setEditingTask] = useState<Task | null>(null)
+  const [viewingTask, setViewingTask] = useState<Task | null>(null)
+
+  const handleTaskSave = (task: Task) => {
+    setShowTaskForm(false)
+    setEditingTask(null)
+    refreshData()
+  }
+
+  const handleTaskEdit = (task: Task) => {
+    setEditingTask(task)
+    setShowTaskForm(true)
+  }
+
+  const handleTaskView = (task: Task) => {
+    setViewingTask(task)
+  }
+
+  const handleTaskUpdate = (task: Task) => {
+    refreshData()
+    setViewingTask(task)
+  }
 
   return (
     <MainLayout>
@@ -22,7 +49,7 @@ function CalendarContent() {
               View your tasks by due date
             </p>
           </div>
-          <Button className="w-full sm:w-auto">
+          <Button className="w-full sm:w-auto" onClick={() => setShowTaskForm(true)}>
             <Plus className="w-4 h-4 mr-2" />
             New Task
           </Button>
@@ -31,12 +58,31 @@ function CalendarContent() {
         {/* Calendar View */}
         <CalendarView
           tasks={allTasks}
-          onTaskView={(task) => {
-            // In a real app, this would open a task detail modal
-            console.log('View task:', task)
-          }}
+          onTaskView={handleTaskView}
+          onTaskEdit={handleTaskEdit}
         />
       </div>
+
+      {/* Task Form Modal */}
+      {showTaskForm && (
+        <TaskForm
+          task={editingTask}
+          onSave={handleTaskSave}
+          onCancel={() => {
+            setShowTaskForm(false)
+            setEditingTask(null)
+          }}
+        />
+      )}
+
+      {/* Task Detail Modal */}
+      {viewingTask && (
+        <TaskDetail
+          task={viewingTask}
+          onClose={() => setViewingTask(null)}
+          onTaskUpdate={handleTaskUpdate}
+        />
+      )}
     </MainLayout>
   )
 }
