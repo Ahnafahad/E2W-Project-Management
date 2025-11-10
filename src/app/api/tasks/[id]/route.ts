@@ -74,7 +74,10 @@ export async function PATCH(
         status: { $ne: 'DONE' }
       })
 
-      const maxRank = activeTasksCount
+      // If current task is DONE and being moved to active, allow N+1 positions
+      // Otherwise, allow N positions (reordering within active tasks)
+      const isCurrentlyDone = currentTask.status === 'DONE'
+      const maxRank = isCurrentlyDone ? activeTasksCount + 1 : activeTasksCount
 
       // Validate bounds
       if (body.priorityRank < 1 || body.priorityRank > maxRank) {
@@ -127,14 +130,16 @@ export async function PATCH(
       'dates.updated': new Date(),
     }
 
-    // If status changed to DONE, set completed date
+    // If status changed to DONE, set completed date and clear priority rank
     if (body.status === 'DONE' && currentTask.status !== 'DONE') {
       updates['dates.completed'] = new Date()
+      updates['priorityRank'] = null // Clear rank when task is completed
     }
 
     // If status changed from DONE to something else, remove completed date
     if (body.status && body.status !== 'DONE' && currentTask.status === 'DONE') {
       updates['dates.completed'] = null
+      // Note: priorityRank should be set via the priorityRank field in body if needed
     }
 
     const task = await Task.findByIdAndUpdate(

@@ -121,6 +121,7 @@ TaskSchema.index({ assignees: 1, deleted: 1 })
 TaskSchema.index({ creator: 1, deleted: 1 }) // For "my tasks" queries
 TaskSchema.index({ 'dates.due': 1, deleted: 1 })
 TaskSchema.index({ 'dates.created': -1 })
+TaskSchema.index({ priorityRank: 1, deleted: 1, status: 1 }) // For priority-based queries
 
 const TaskModel: Model<Task> =
   mongoose.models.Task || mongoose.model<Task>('Task', TaskSchema)

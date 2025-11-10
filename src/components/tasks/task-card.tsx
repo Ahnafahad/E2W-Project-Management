@@ -222,6 +222,16 @@ export function TaskCard({ task, onEdit, onDelete, onStatusChange, onView, compa
             />
             <PriorityBadge priority={task.priority} />
 
+            {/* Priority Rank Badge - only show for active tasks with rank */}
+            {task.priorityRank && task.status !== 'DONE' && (
+              <span
+                className="px-2 py-1 rounded-sm text-xs font-medium border bg-purple-100 text-purple-700 border-purple-300"
+                title={`Global priority rank: ${task.priorityRank}`}
+              >
+                #{task.priorityRank}
+              </span>
+            )}
+
             {/* Tags */}
             {task.tags.slice(0, 2).map(tag => (
               <span

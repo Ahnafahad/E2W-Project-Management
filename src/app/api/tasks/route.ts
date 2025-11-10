@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import connectDB from '@/lib/mongodb'
 import { Task, ProjectStats, ActivityLog } from '@/models'
 
-// GET /api/tasks - Get all tasks (with filters)
+// GET /api/tasks - Get all tasks (with filters and pagination)
 export async function GET(request: NextRequest) {
   try {
     await connectDB()
@@ -15,10 +15,19 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search')
     const includeDeleted = searchParams.get('includeDeleted') === 'true'
 
+    // Pagination parameters
+    const limit = parseInt(searchParams.get('limit') || '0')
+    const offset = parseInt(searchParams.get('offset') || '0')
+    const excludeDone = searchParams.get('excludeDone') === 'true'
+
     const query: Record<string, unknown> = {}
 
     if (!includeDeleted) {
       query.deleted = { $ne: true }
+    }
+
+    if (excludeDone) {
+      query.status = { $ne: 'DONE' }
     }
 
     if (projectId) {
@@ -49,12 +58,24 @@ export async function GET(request: NextRequest) {
       ]
     }
 
-    const tasks = await Task.find(query).sort({ 'dates.updated': -1 }).lean()
+    // Get total count for pagination
+    const totalCount = await Task.countDocuments(query)
+
+    // Build query with pagination
+    let taskQuery = Task.find(query).sort({ 'dates.updated': -1 })
+
+    if (limit > 0) {
+      taskQuery = taskQuery.skip(offset).limit(limit)
+    }
+
+    const tasks = await taskQuery.lean()
 
     return NextResponse.json({
       success: true,
       data: tasks,
       count: tasks.length,
+      totalCount,
+      hasMore: limit > 0 ? offset + tasks.length < totalCount : false,
     }, { status: 200 })
   } catch (error: unknown) {
     console.error('Error fetching tasks:', error)

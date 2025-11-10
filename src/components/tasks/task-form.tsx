@@ -52,6 +52,14 @@ export function TaskForm({ task, projectId, onSave, onCancel }: TaskFormProps) {
     fetchTeamMembers()
   }, [])
 
+  // Auto-adjust priorityRank if it exceeds the new valid range
+  // This fixes the bug where completed tasks reduce the valid range
+  useEffect(() => {
+    if (formData.priorityRank && formData.priorityRank > totalActiveTasksCount) {
+      setFormData(prev => ({ ...prev, priorityRank: totalActiveTasksCount }))
+    }
+  }, [totalActiveTasksCount, formData.priorityRank])
+
   // Disabled until file storage backend is implemented
   // const [attachments, setAttachments] = useState<FileAttachment[]>(
   //   task?.attachments?.map(att => ({
@@ -81,6 +89,7 @@ export function TaskForm({ task, projectId, onSave, onCancel }: TaskFormProps) {
         description: formData.description.trim(),
         status: formData.status,
         priority: formData.priority,
+        priorityRank: formData.priorityRank, // Include priority rank in API call
         project: formData.project,
         assignees: formData.assignees.filter(id => id),
         creator: user._id,
