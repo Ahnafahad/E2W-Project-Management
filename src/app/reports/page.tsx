@@ -7,7 +7,6 @@ import { AnalyticsCharts } from '@/components/analytics/analytics-charts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import {
-  Calendar,
   Download,
   Filter,
   FileText,
@@ -18,8 +17,7 @@ import {
   CheckSquare,
   AlertTriangle
 } from 'lucide-react'
-import { useProjects, useTasks, useAuth } from '@/lib/context'
-import { formatRelativeTime } from '@/lib/utils'
+import { useProjects, useTasks } from '@/lib/context'
 
 type ReportType = 'overview' | 'productivity' | 'projects' | 'team' | 'custom'
 type TimeRange = '7d' | '30d' | '90d' | 'all'
@@ -27,7 +25,6 @@ type TimeRange = '7d' | '30d' | '90d' | 'all'
 function ReportsContent() {
   const { allTasks } = useTasks()
   const { projects } = useProjects()
-  const { user } = useAuth()
 
   const [activeReport, setActiveReport] = useState<ReportType>('overview')
   const [timeRange, setTimeRange] = useState<TimeRange>('30d')
@@ -370,11 +367,11 @@ function ReportsContent() {
                   {filteredTasks
                     .filter(task => task.timeTracked && task.timeTracked > 0)
                     .slice(0, 5)
-                    .map(task => (
-                      <div key={task._id} className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600 truncate">{task.title}</span>
+                    .map(taskItem => (
+                      <div key={taskItem._id} className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600 truncate">{taskItem.title}</span>
                         <span className="text-sm font-medium">
-                          {Math.round(task.timeTracked! / 60)}h
+                          {Math.round(taskItem.timeTracked! / 60)}h
                         </span>
                       </div>
                     ))}

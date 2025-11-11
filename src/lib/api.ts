@@ -1,4 +1,4 @@
-import { User, Project, Task, Comment, ProjectStats, ActivityLog } from '@/types'
+import { User, Project, Task, Comment, ProjectStats } from '@/types'
 
 // API Response types
 interface ApiResponse<T> {

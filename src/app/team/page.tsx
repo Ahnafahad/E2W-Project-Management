@@ -72,13 +72,13 @@ function TeamContent() {
         const data = await response.json()
 
         if (data.success) {
-          const members: TeamMember[] = data.data.map((u: any) => ({
+          const members: TeamMember[] = data.data.map((u: { _id: string; name: string; email: string; avatar?: string; created?: string; createdAt?: string; lastLogin?: string }) => ({
             id: u._id,
             name: u.name,
             email: u.email,
             role: u._id === user?._id ? 'OWNER' : 'MEMBER', // Set current user as OWNER, others as MEMBER
             avatar: u.avatar,
-            joinedAt: new Date(u.created || u.createdAt).toLocaleDateString(),
+            joinedAt: new Date(u.created || u.createdAt || '').toLocaleDateString(),
             lastActive: u.lastLogin
               ? formatLastActive(new Date(u.lastLogin))
               : 'Never',

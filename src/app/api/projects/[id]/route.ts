@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import connectDB from '@/lib/mongodb'
-import { Project, Task, ProjectStats } from '@/models'
+import { Project, Task } from '@/models'
 
 interface RouteParams {
   params: Promise<{

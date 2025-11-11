@@ -3,7 +3,7 @@ import connectDB from '@/lib/mongodb'
 import { User, Project, Task, ProjectStats } from '@/models'
 import bcrypt from 'bcryptjs'
 
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     await connectDB()
 
@@ -42,9 +42,6 @@ export async function POST(request: NextRequest) {
       password: hashedPassword,
       projectRoles: [],
     })
-
-    // Use first team member as the primary user
-    const demoUser = ahnafAhad
 
     // Create demo projects with all team members
     const allMembers = [
@@ -203,7 +200,7 @@ export async function POST(request: NextRequest) {
 }
 
 // DELETE endpoint to clear all data
-export async function DELETE(request: NextRequest) {
+export async function DELETE(_request: NextRequest) {
   try {
     await connectDB()
 

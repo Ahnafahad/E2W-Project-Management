@@ -1,4 +1,4 @@
-import { User, Project, Task, Comment, ProjectStats, Automation, ActivityLog } from '@/types'
+import { User, Project, Task, Comment, ProjectStats, ActivityLog } from '@/types'
 
 // Storage keys
 const STORAGE_KEYS = {

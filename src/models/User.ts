@@ -41,12 +41,12 @@ const UserSchema = new Schema<User>(
   {
     timestamps: true,
     toJSON: {
-      transform: (doc, ret) => {
-        (ret as any)._id = ret._id.toString()
-        ret.created = (ret as any).createdAt
-        delete (ret as any).createdAt
-        delete (ret as any).updatedAt
-        delete (ret as any).__v
+      transform: (_doc, ret: Record<string, unknown>) => {
+        ret._id = (ret._id as mongoose.Types.ObjectId).toString()
+        ret.created = ret.createdAt
+        delete ret.createdAt
+        delete ret.updatedAt
+        delete ret.__v
         return ret
       },
     },

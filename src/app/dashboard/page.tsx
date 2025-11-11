@@ -14,7 +14,6 @@ import {
   ArrowRight
 } from "lucide-react"
 import { useAuth, useProjects, useTasks } from '@/lib/context'
-import { ProjectStatsStore } from '@/lib/storage'
 import { formatRelativeTime, getInitials } from '@/lib/utils'
 import { AnalyticsCharts } from '@/components/analytics/analytics-charts'
 import { LucideIcon } from 'lucide-react'
@@ -118,17 +117,17 @@ function DashboardContent() {
       .filter(task => task.status !== 'DONE')
       .sort((a, b) => new Date(b.dates.updated).getTime() - new Date(a.dates.updated).getTime())
       .slice(0, 5)
-      .map(task => {
-        const project = projects.find(p => p._id === task.project)
-        const dueDate = task.dates.due
-          ? formatRelativeTime(new Date(task.dates.due))
+      .map(taskItem => {
+        const project = projects.find(p => p._id === taskItem.project)
+        const dueDate = taskItem.dates.due
+          ? formatRelativeTime(new Date(taskItem.dates.due))
           : 'No due date'
 
         return {
-          id: task._id,
-          title: task.title,
+          id: taskItem._id,
+          title: taskItem.title,
           project: project?.name || 'Unknown Project',
-          priority: task.priority,
+          priority: taskItem.priority,
           dueDate,
           assignee: user?.name || 'Unassigned',
         }
@@ -161,7 +160,7 @@ function DashboardContent() {
     task.status !== 'DONE'
   ).length
 
-  const handleTaskSave = (task: Task) => {
+  const handleTaskSave = (_task: Task) => {
     setShowTaskForm(false)
     refreshData()
   }

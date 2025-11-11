@@ -120,7 +120,6 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate and handle priorityRank
-    let validatedPriorityRank = priorityRank
     if (priorityRank !== undefined) {
       // Count active tasks (not deleted, not completed)
       const activeTasksCount = await Task.countDocuments({

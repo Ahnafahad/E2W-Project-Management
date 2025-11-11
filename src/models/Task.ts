@@ -1,5 +1,5 @@
 import mongoose, { Schema, Model } from 'mongoose'
-import type { Task, TaskStatus, TaskPriority, Attachment, RecurringConfig } from '@/types'
+import type { Task, Attachment, RecurringConfig } from '@/types'
 
 const AttachmentSchema = new Schema<Attachment>(
   {
@@ -106,9 +106,9 @@ const TaskSchema = new Schema<Task>(
   {
     timestamps: false, // We manage dates manually
     toJSON: {
-      transform: (doc, ret) => {
-        (ret as any)._id = ret._id.toString()
-        delete (ret as any).__v
+      transform: (_doc, ret: Record<string, unknown>) => {
+        ret._id = (ret._id as mongoose.Types.ObjectId).toString()
+        delete ret.__v
         return ret
       },
     },

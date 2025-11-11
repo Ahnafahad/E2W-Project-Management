@@ -1,5 +1,5 @@
 import mongoose, { Schema, Model } from 'mongoose'
-import type { ProjectStats, TaskStatus, TaskPriority } from '@/types'
+import type { ProjectStats } from '@/types'
 
 const ProjectStatsSchema = new Schema<ProjectStats>(
   {
@@ -48,9 +48,9 @@ const ProjectStatsSchema = new Schema<ProjectStats>(
   {
     timestamps: false,
     toJSON: {
-      transform: (doc, ret) => {
-        (ret as any)._id = ret._id.toString()
-        delete (ret as any).__v
+      transform: (_doc, ret: Record<string, unknown>) => {
+        ret._id = (ret._id as mongoose.Types.ObjectId).toString()
+        delete ret.__v
         return ret
       },
     },

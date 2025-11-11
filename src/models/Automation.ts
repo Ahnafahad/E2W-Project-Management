@@ -49,11 +49,11 @@ const AutomationSchema = new Schema<Automation>(
   {
     timestamps: true,
     toJSON: {
-      transform: (doc, ret) => {
-        (ret as any)._id = ret._id.toString()
-        delete (ret as any).__v
-        delete (ret as any).createdAt
-        delete (ret as any).updatedAt
+      transform: (_doc, ret: Record<string, unknown>) => {
+        ret._id = (ret._id as mongoose.Types.ObjectId).toString()
+        delete ret.__v
+        delete ret.createdAt
+        delete ret.updatedAt
         return ret
       },
     },

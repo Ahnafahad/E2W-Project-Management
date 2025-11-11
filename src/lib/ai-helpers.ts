@@ -1,4 +1,4 @@
-import { Task, Project, TaskPriority, TaskStatus } from '@/types'
+import { Task, Project, TaskPriority } from '@/types'
 
 // Task templates for common project types
 export const taskTemplates = {

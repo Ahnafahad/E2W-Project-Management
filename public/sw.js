@@ -159,7 +159,7 @@ async function networkFirstStrategy(request) {
     }
 
     return networkResponse
-  } catch (error) {
+  } catch (_error) {
     console.log('[SW] Network failed, trying cache for:', request.url)
     const cachedResponse = await caches.match(request)
     return cachedResponse || new Response('Network error', { status: 408 })
@@ -183,9 +183,9 @@ async function cacheFirstStrategy(request) {
     }
 
     return networkResponse
-  } catch (error) {
-    console.error('[SW] Failed to fetch from network:', error)
-    throw error
+  } catch (_error) {
+    console.error('[SW] Failed to fetch from network:', _error)
+    throw _error
   }
 }
 
@@ -202,8 +202,8 @@ async function staleWhileRevalidateStrategy(request) {
       }
       return response
     })
-    .catch(error => {
-      console.log('[SW] Background fetch failed:', error)
+    .catch(_error => {
+      console.log('[SW] Background fetch failed:', _error)
     })
 
   // Return cached response immediately if available
@@ -310,13 +310,13 @@ async function doBackgroundSync() {
         try {
           await syncDataItem(item)
           await removePendingDataItem(item.id)
-        } catch (error) {
-          console.error('[SW] Failed to sync item:', item.id, error)
+        } catch (_error) {
+          console.error('[SW] Failed to sync item:', item.id, _error)
         }
       }
     }
-  } catch (error) {
-    console.error('[SW] Background sync failed:', error)
+  } catch (_error) {
+    console.error('[SW] Background sync failed:', _error)
   }
 }
 

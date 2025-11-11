@@ -10,7 +10,7 @@ import { BoardView } from '@/components/tasks/board-view'
 import { CalendarView } from '@/components/tasks/calendar-view'
 import { TimelineView } from '@/components/tasks/timeline-view'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import {
   Plus,
   Search,
@@ -110,23 +110,7 @@ function TasksContent() {
     return filtered
   }, [allTasks, searchQuery, filterStatus, filterPriority, filterProject, sortField, sortDirection])
 
-  // Group tasks by status for board view
-  const tasksByStatus = useMemo(() => {
-    const groups = {
-      TODO: [] as Task[],
-      IN_PROGRESS: [] as Task[],
-      DONE: [] as Task[],
-      BLOCKED: [] as Task[],
-    }
-
-    filteredAndSortedTasks.forEach(task => {
-      groups[task.status].push(task)
-    })
-
-    return groups
-  }, [filteredAndSortedTasks])
-
-  const handleTaskSave = (task: Task) => {
+  const handleTaskSave = (_task: Task) => {
     setShowTaskForm(false)
     setEditingTask(null)
     refreshData()

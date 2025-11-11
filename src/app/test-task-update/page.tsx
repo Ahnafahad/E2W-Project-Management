@@ -1,10 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Button } from '@/components/ui/card'
+import type { Task } from '@/types'
 
 export default function TestTaskUpdatePage() {
-  const [tasks, setTasks] = useState<any[]>([])
+  const [tasks, setTasks] = useState<Task[]>([])
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
@@ -25,8 +25,8 @@ export default function TestTaskUpdatePage() {
       } else {
         setError(`Failed to load tasks: ${data.error}`)
       }
-    } catch (err: any) {
-      setError(`Network error: ${err.message}`)
+    } catch (err: unknown) {
+      setError(`Network error: ${err instanceof Error ? err.message : 'Unknown error'}`)
     } finally {
       setLoading(false)
     }
@@ -55,8 +55,8 @@ export default function TestTaskUpdatePage() {
       } else {
         setError(`❌ API Error: ${data.error}`)
       }
-    } catch (err: any) {
-      setError(`❌ Network Error: ${err.message}`)
+    } catch (err: unknown) {
+      setError(`❌ Network Error: ${err instanceof Error ? err.message : 'Unknown error'}`)
     } finally {
       setLoading(false)
     }

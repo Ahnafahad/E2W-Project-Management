@@ -36,7 +36,7 @@ export class AuthService {
       UserStore.setCurrentUser(updatedUser!)
 
       return { user: updatedUser!, success: true }
-    } catch (error) {
+    } catch (_error) {
       return { user: null, success: false, error: 'Authentication failed' }
     }
   }
@@ -62,7 +62,7 @@ export class AuthService {
       UserStore.setCurrentUser(newUser)
 
       return { user: newUser, success: true }
-    } catch (error) {
+    } catch (_error) {
       return { user: null, success: false, error: 'Registration failed' }
     }
   }
@@ -101,7 +101,7 @@ export class AuthService {
       UserStore.update(userId, { password: hashedPassword })
 
       return { success: true }
-    } catch (error) {
+    } catch (_error) {
       return { success: false, error: 'Password change failed' }
     }
   }
@@ -115,7 +115,7 @@ export class AuthService {
 
       UserStore.setCurrentUser(updatedUser)
       return { user: updatedUser, success: true }
-    } catch (error) {
+    } catch (_error) {
       return { user: null, success: false, error: 'Profile update failed' }
     }
   }

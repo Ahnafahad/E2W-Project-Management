@@ -1,10 +1,6 @@
 import mongoose from 'mongoose'
 
-if (!process.env.MONGODB_URI) {
-  throw new Error('Please add your MONGODB_URI to .env.local')
-}
-
-const MONGODB_URI: string = process.env.MONGODB_URI
+const MONGODB_URI: string = process.env.MONGODB_URI || ''
 
 /**
  * Global is used here to maintain a cached connection across hot reloads
@@ -27,6 +23,10 @@ if (!global.mongoose) {
 }
 
 async function connectDB(): Promise<typeof mongoose> {
+  if (!MONGODB_URI) {
+    throw new Error('Please add your MONGODB_URI to .env.local')
+  }
+
   if (cached.conn) {
     console.log('✅ Using cached MongoDB connection')
     return cached.conn

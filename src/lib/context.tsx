@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { User, Project, Task } from '@/types'
 import { ProjectApi, TaskApi, UserSession } from './api'
 import { useSession } from 'next-auth/react'
@@ -32,6 +32,26 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [tasks, setTasks] = useState<Task[]>([])
   const [currentProject, setCurrentProject] = useState<Project | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+
+  // Helper function to refresh data for a user
+  const refreshDataForUser = useCallback(async (userId: string) => {
+    try {
+      const [userProjects, userTasks] = await Promise.all([
+        ProjectApi.getAll(userId),
+        TaskApi.getByUser(userId),
+      ])
+
+      setProjects(userProjects)
+      setTasks(userTasks)
+
+      // Set current project to first project if exists
+      if (userProjects.length > 0 && !currentProject) {
+        setCurrentProject(userProjects[0])
+      }
+    } catch (error) {
+      console.error('Failed to refresh data:', error)
+    }
+  }, [currentProject])
 
   // Load user data from session
   useEffect(() => {
@@ -68,27 +88,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
 
     loadUserData()
-  }, [session, status])
-
-  // Helper function to refresh data for a user
-  const refreshDataForUser = async (userId: string) => {
-    try {
-      const [userProjects, userTasks] = await Promise.all([
-        ProjectApi.getAll(userId),
-        TaskApi.getByUser(userId),
-      ])
-
-      setProjects(userProjects)
-      setTasks(userTasks)
-
-      // Set current project to first project if exists
-      if (userProjects.length > 0 && !currentProject) {
-        setCurrentProject(userProjects[0])
-      }
-    } catch (error) {
-      console.error('Failed to refresh data:', error)
-    }
-  }
+  }, [session, status, refreshDataForUser])
 
   const refreshData = async () => {
     if (user) {

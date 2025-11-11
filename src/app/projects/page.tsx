@@ -13,9 +13,7 @@ import {
   Trash2,
   Users,
   CheckSquare,
-  Calendar,
-  TrendingUp,
-  Settings
+  Calendar
 } from 'lucide-react'
 import { Project } from '@/types'
 import { ProjectApi } from '@/lib/api'

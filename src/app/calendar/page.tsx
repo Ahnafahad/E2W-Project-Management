@@ -18,7 +18,7 @@ function CalendarContent() {
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [viewingTask, setViewingTask] = useState<Task | null>(null)
 
-  const handleTaskSave = (task: Task) => {
+  const handleTaskSave = (_task: Task) => {
     setShowTaskForm(false)
     setEditingTask(null)
     refreshData()
