@@ -17,7 +17,7 @@ import { Task, TaskStatus } from '@/types'
 import { TaskCard } from './task-card'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Plus } from 'lucide-react'
+import { Plus, ChevronDown, ChevronRight } from 'lucide-react'
 
 interface BoardViewProps {
   tasks: Task[]
@@ -44,6 +44,8 @@ export function BoardView({
   onNewTask,
 }: BoardViewProps) {
   const [activeTask, setActiveTask] = useState<Task | null>(null)
+  const [collapsedColumns, setCollapsedColumns] = useState<Set<TaskStatus>>(new Set())
+  const [doneTasksLimit, setDoneTasksLimit] = useState(10)
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -93,6 +95,18 @@ export function BoardView({
     setActiveTask(null)
   }
 
+  const toggleColumnCollapse = (columnId: TaskStatus) => {
+    setCollapsedColumns(prev => {
+      const next = new Set(prev)
+      if (next.has(columnId)) {
+        next.delete(columnId)
+      } else {
+        next.add(columnId)
+      }
+      return next
+    })
+  }
+
   return (
     <DndContext
       sensors={sensors}
@@ -102,18 +116,30 @@ export function BoardView({
       onDragCancel={handleDragCancel}
     >
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-        {STATUS_COLUMNS.map(column => (
-          <BoardColumn
-            key={column.id}
-            column={column}
-            tasks={tasksByStatus[column.id] || []}
-            onTaskEdit={onTaskEdit}
-            onTaskDelete={onTaskDelete}
-            onStatusChange={onStatusChange}
-            onTaskView={onTaskView}
-            onNewTask={onNewTask}
-          />
-        ))}
+        {STATUS_COLUMNS.map(column => {
+          const columnTasks = tasksByStatus[column.id] || []
+          const isDoneColumn = column.id === 'DONE'
+          const displayedTasks = isDoneColumn ? columnTasks.slice(0, doneTasksLimit) : columnTasks
+          const hasMoreTasks = isDoneColumn && columnTasks.length > doneTasksLimit
+
+          return (
+            <BoardColumn
+              key={column.id}
+              column={column}
+              tasks={displayedTasks}
+              totalTaskCount={columnTasks.length}
+              onTaskEdit={onTaskEdit}
+              onTaskDelete={onTaskDelete}
+              onStatusChange={onStatusChange}
+              onTaskView={onTaskView}
+              onNewTask={onNewTask}
+              isCollapsed={collapsedColumns.has(column.id)}
+              onToggleCollapse={() => toggleColumnCollapse(column.id)}
+              hasMoreTasks={hasMoreTasks}
+              onShowMore={isDoneColumn ? () => setDoneTasksLimit(prev => prev + 10) : undefined}
+            />
+          )
+        })}
       </div>
 
       <DragOverlay>
@@ -137,21 +163,31 @@ export function BoardView({
 interface BoardColumnProps {
   column: { id: TaskStatus; label: string }
   tasks: Task[]
+  totalTaskCount: number
   onTaskEdit: (task: Task) => void
   onTaskDelete: (taskId: string) => void
   onStatusChange: (taskId: string, status: TaskStatus) => void
   onTaskView?: (task: Task) => void
   onNewTask?: () => void
+  isCollapsed: boolean
+  onToggleCollapse: () => void
+  hasMoreTasks: boolean
+  onShowMore?: () => void
 }
 
 function BoardColumn({
   column,
   tasks,
+  totalTaskCount,
   onTaskEdit,
   onTaskDelete,
   onStatusChange,
   onTaskView,
   onNewTask,
+  isCollapsed,
+  onToggleCollapse,
+  hasMoreTasks,
+  onShowMore,
 }: BoardColumnProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: column.id,
@@ -162,8 +198,21 @@ function BoardColumn({
       <CardHeader className="pb-3">
         <CardTitle className="text-sm font-medium flex items-center justify-between">
           <span className="flex items-center gap-2">
+            <button
+              onClick={onToggleCollapse}
+              className="text-gray-500 hover:text-gray-700 transition-colors"
+              aria-label={isCollapsed ? 'Expand column' : 'Collapse column'}
+            >
+              {isCollapsed ? (
+                <ChevronRight className="w-4 h-4" />
+              ) : (
+                <ChevronDown className="w-4 h-4" />
+              )}
+            </button>
             {column.label}
-            <span className="text-gray-500 font-normal">{tasks.length}</span>
+            <span className="text-gray-500 font-normal">
+              {tasks.length === totalTaskCount ? totalTaskCount : `${tasks.length}/${totalTaskCount}`}
+            </span>
           </span>
           {onNewTask && column.id === 'TODO' && (
             <Button
@@ -177,26 +226,40 @@ function BoardColumn({
           )}
         </CardTitle>
       </CardHeader>
-      <CardContent
-        ref={setNodeRef}
-        className="space-y-3 min-h-[200px] pb-6"
-      >
-        {tasks.map(task => (
-          <DraggableTask
-            key={task._id}
-            task={task}
-            onEdit={onTaskEdit}
-            onDelete={onTaskDelete}
-            onStatusChange={onStatusChange}
-            onView={onTaskView}
-          />
-        ))}
-        {tasks.length === 0 && (
-          <div className="text-center py-8 text-gray-400">
-            <div className="text-xs">No tasks</div>
-          </div>
-        )}
-      </CardContent>
+      {!isCollapsed && (
+        <CardContent
+          ref={setNodeRef}
+          className="space-y-3 min-h-[200px] pb-6"
+        >
+          {tasks.map(task => (
+            <DraggableTask
+              key={task._id}
+              task={task}
+              onEdit={onTaskEdit}
+              onDelete={onTaskDelete}
+              onStatusChange={onStatusChange}
+              onView={onTaskView}
+            />
+          ))}
+          {tasks.length === 0 && (
+            <div className="text-center py-8 text-gray-400">
+              <div className="text-xs">No tasks</div>
+            </div>
+          )}
+          {hasMoreTasks && onShowMore && (
+            <div className="pt-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onShowMore}
+                className="w-full text-xs"
+              >
+                Show More ({totalTaskCount - tasks.length} more)
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      )}
     </Card>
   )
 }

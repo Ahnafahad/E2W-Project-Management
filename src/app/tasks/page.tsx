@@ -47,10 +47,14 @@ function TasksContent() {
   const [sortField, setSortField] = useState<SortField>('created')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
   const [showFilters, setShowFilters] = useState(false)
+  const [hideCompleted, setHideCompleted] = useState(false)
 
   // Filter and sort tasks
   const filteredAndSortedTasks = useMemo(() => {
     const filtered = allTasks.filter(task => {
+      // Hide completed tasks filter
+      if (hideCompleted && task.status === 'DONE') return false
+
       // Search filter
       if (searchQuery) {
         const query = searchQuery.toLowerCase()
@@ -108,7 +112,7 @@ function TasksContent() {
     })
 
     return filtered
-  }, [allTasks, searchQuery, filterStatus, filterPriority, filterProject, sortField, sortDirection])
+  }, [allTasks, searchQuery, filterStatus, filterPriority, filterProject, sortField, sortDirection, hideCompleted])
 
   const handleTaskSave = (_task: Task) => {
     setShowTaskForm(false)
@@ -154,9 +158,10 @@ function TasksContent() {
     setFilterStatus('ALL')
     setFilterPriority('ALL')
     setFilterProject('ALL')
+    setHideCompleted(false)
   }
 
-  const hasActiveFilters = searchQuery || filterStatus !== 'ALL' || filterPriority !== 'ALL' || filterProject !== 'ALL'
+  const hasActiveFilters = searchQuery || filterStatus !== 'ALL' || filterPriority !== 'ALL' || filterProject !== 'ALL' || hideCompleted
 
   return (
     <MainLayout>
@@ -326,6 +331,21 @@ function TasksContent() {
                       Clear Filters
                     </Button>
                   </div>
+                </div>
+
+                {/* Hide Completed Tasks Toggle */}
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={hideCompleted}
+                      onChange={(e) => setHideCompleted(e.target.checked)}
+                      className="w-4 h-4 text-gray-900 border-gray-300 rounded focus:ring-gray-900"
+                    />
+                    <span className="text-sm font-medium text-gray-700">
+                      Hide Completed Tasks
+                    </span>
+                  </label>
                 </div>
               </div>
             )}
