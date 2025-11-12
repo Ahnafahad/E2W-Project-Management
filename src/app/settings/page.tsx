@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { MainLayout } from "@/components/layout/main-layout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -22,6 +22,7 @@ import { getInitials } from '@/lib/utils'
 function SettingsContent() {
   const { user } = useAuth()
   const [activeTab, setActiveTab] = useState('profile')
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Form states
   const [name, setName] = useState(user?.name || '')
@@ -30,6 +31,13 @@ function SettingsContent() {
   const [pushNotifications, setPushNotifications] = useState(false)
   const [taskUpdates, setTaskUpdates] = useState(true)
   const [projectUpdates, setProjectUpdates] = useState(true)
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [theme, setTheme] = useState('Light')
+  const [language, setLanguage] = useState('English (US)')
+  const [timezone, setTimezone] = useState('UTC-5 (Eastern Time)')
+  const [dateFormat, setDateFormat] = useState('MM/DD/YYYY')
 
   const tabs = [
     { id: 'profile', label: 'Profile', icon: User },
@@ -45,10 +53,89 @@ function SettingsContent() {
     alert('Profile saved successfully!')
   }
 
+  const handleCancelProfile = () => {
+    setName(user?.name || '')
+    setEmail(user?.email || '')
+  }
+
   const handleSaveNotifications = () => {
     // In a real app, this would save to the database
     console.log('Saving notifications:', { emailNotifications, pushNotifications, taskUpdates, projectUpdates })
     alert('Notification preferences saved!')
+  }
+
+  const handleCancelNotifications = () => {
+    setEmailNotifications(true)
+    setPushNotifications(false)
+    setTaskUpdates(true)
+    setProjectUpdates(true)
+  }
+
+  const handleUpdatePassword = () => {
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      alert('Please fill in all password fields')
+      return
+    }
+    if (newPassword !== confirmPassword) {
+      alert('New passwords do not match')
+      return
+    }
+    // In a real app, this would update the password
+    console.log('Updating password')
+    alert('Password updated successfully!')
+    setCurrentPassword('')
+    setNewPassword('')
+    setConfirmPassword('')
+  }
+
+  const handleCancelPassword = () => {
+    setCurrentPassword('')
+    setNewPassword('')
+    setConfirmPassword('')
+  }
+
+  const handleSaveAppearance = () => {
+    // In a real app, this would save theme preference
+    console.log('Saving theme:', theme)
+    alert('Appearance settings saved!')
+  }
+
+  const handleCancelAppearance = () => {
+    setTheme('Light')
+  }
+
+  const handleSavePreferences = () => {
+    // In a real app, this would save preferences
+    console.log('Saving preferences:', { language, timezone, dateFormat })
+    alert('Preferences saved!')
+  }
+
+  const handleCancelPreferences = () => {
+    setLanguage('English (US)')
+    setTimezone('UTC-5 (Eastern Time)')
+    setDateFormat('MM/DD/YYYY')
+  }
+
+  const handleDeleteAccount = () => {
+    if (window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+      // In a real app, this would delete the account
+      console.log('Deleting account')
+      alert('Account deletion initiated. You will be logged out.')
+      // Could redirect to logout or login page
+    }
+  }
+
+  const handleFileUpload = () => {
+    fileInputRef.current?.click()
+  }
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) {
+      // In a real app, this would upload the file
+      console.log('Uploading file:', file.name)
+      alert(`Profile picture uploaded: ${file.name}`)
+    }
   }
 
   return (
@@ -103,7 +190,10 @@ function SettingsContent() {
                       <div className="w-24 h-24 bg-gray-900 text-white rounded-full flex items-center justify-center text-2xl font-medium">
                         {getInitials(user?.name || 'User')}
                       </div>
-                      <button className="absolute bottom-0 right-0 p-2 bg-white rounded-full shadow-lg border border-gray-200 hover:bg-gray-50">
+                      <button
+                        onClick={handleFileUpload}
+                        className="absolute bottom-0 right-0 p-2 bg-white rounded-full shadow-lg border border-gray-200 hover:bg-gray-50"
+                      >
                         <Camera className="w-4 h-4" />
                       </button>
                     </div>
@@ -112,9 +202,16 @@ function SettingsContent() {
                       <p className="text-sm text-gray-500 mt-1">
                         JPG, PNG or GIF. Max size 2MB
                       </p>
-                      <Button variant="ghost" size="sm" className="mt-2">
+                      <Button variant="ghost" size="sm" className="mt-2" onClick={handleFileUpload}>
                         Upload new picture
                       </Button>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        className="hidden"
+                      />
                     </div>
                   </div>
 
@@ -147,7 +244,7 @@ function SettingsContent() {
                   </div>
 
                   <div className="flex justify-end gap-3">
-                    <Button variant="ghost">Cancel</Button>
+                    <Button variant="ghost" onClick={handleCancelProfile}>Cancel</Button>
                     <Button onClick={handleSaveProfile}>
                       <Save className="w-4 h-4 mr-2" />
                       Save Changes
@@ -231,7 +328,7 @@ function SettingsContent() {
                   </div>
 
                   <div className="flex justify-end gap-3">
-                    <Button variant="ghost">Cancel</Button>
+                    <Button variant="ghost" onClick={handleCancelNotifications}>Cancel</Button>
                     <Button onClick={handleSaveNotifications}>
                       <Save className="w-4 h-4 mr-2" />
                       Save Preferences
@@ -254,6 +351,8 @@ function SettingsContent() {
                     </label>
                     <input
                       type="password"
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
                       className="input"
                       placeholder="Enter current password"
                     />
@@ -265,6 +364,8 @@ function SettingsContent() {
                     </label>
                     <input
                       type="password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
                       className="input"
                       placeholder="Enter new password"
                     />
@@ -276,14 +377,16 @@ function SettingsContent() {
                     </label>
                     <input
                       type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
                       className="input"
                       placeholder="Confirm new password"
                     />
                   </div>
 
                   <div className="flex justify-end gap-3">
-                    <Button variant="ghost">Cancel</Button>
-                    <Button>
+                    <Button variant="ghost" onClick={handleCancelPassword}>Cancel</Button>
+                    <Button onClick={handleUpdatePassword}>
                       <Lock className="w-4 h-4 mr-2" />
                       Update Password
                     </Button>
@@ -304,24 +407,25 @@ function SettingsContent() {
                       Theme
                     </label>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      {['Light', 'Dark', 'System'].map((theme) => (
+                      {['Light', 'Dark', 'System'].map((themeOption) => (
                         <button
-                          key={theme}
+                          key={themeOption}
+                          onClick={() => setTheme(themeOption)}
                           className={`p-4 border-2 rounded-lg text-center transition-all ${
-                            theme === 'Light'
+                            theme === themeOption
                               ? 'border-gray-900 bg-gray-50'
                               : 'border-gray-200 hover:border-gray-400'
                           }`}
                         >
-                          <div className="font-medium">{theme}</div>
+                          <div className="font-medium">{themeOption}</div>
                         </button>
                       ))}
                     </div>
                   </div>
 
                   <div className="flex justify-end gap-3">
-                    <Button variant="ghost">Cancel</Button>
-                    <Button>
+                    <Button variant="ghost" onClick={handleCancelAppearance}>Cancel</Button>
+                    <Button onClick={handleSaveAppearance}>
                       <Save className="w-4 h-4 mr-2" />
                       Save Appearance
                     </Button>
@@ -341,7 +445,11 @@ function SettingsContent() {
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Language
                     </label>
-                    <select className="input">
+                    <select
+                      value={language}
+                      onChange={(e) => setLanguage(e.target.value)}
+                      className="input"
+                    >
                       <option>English (US)</option>
                       <option>Spanish</option>
                       <option>French</option>
@@ -353,7 +461,11 @@ function SettingsContent() {
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Timezone
                     </label>
-                    <select className="input">
+                    <select
+                      value={timezone}
+                      onChange={(e) => setTimezone(e.target.value)}
+                      className="input"
+                    >
                       <option>UTC-5 (Eastern Time)</option>
                       <option>UTC-6 (Central Time)</option>
                       <option>UTC-7 (Mountain Time)</option>
@@ -365,7 +477,11 @@ function SettingsContent() {
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Date Format
                     </label>
-                    <select className="input">
+                    <select
+                      value={dateFormat}
+                      onChange={(e) => setDateFormat(e.target.value)}
+                      className="input"
+                    >
                       <option>MM/DD/YYYY</option>
                       <option>DD/MM/YYYY</option>
                       <option>YYYY-MM-DD</option>
@@ -373,8 +489,8 @@ function SettingsContent() {
                   </div>
 
                   <div className="flex justify-end gap-3">
-                    <Button variant="ghost">Cancel</Button>
-                    <Button>
+                    <Button variant="ghost" onClick={handleCancelPreferences}>Cancel</Button>
+                    <Button onClick={handleSavePreferences}>
                       <Save className="w-4 h-4 mr-2" />
                       Save Preferences
                     </Button>
@@ -396,7 +512,7 @@ function SettingsContent() {
                       Permanently delete your account and all associated data
                     </p>
                   </div>
-                  <Button variant="ghost" className="text-red-600 hover:bg-red-50">
+                  <Button variant="ghost" className="text-red-600 hover:bg-red-50" onClick={handleDeleteAccount}>
                     <Trash2 className="w-4 h-4 mr-2" />
                     Delete Account
                   </Button>

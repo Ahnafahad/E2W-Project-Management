@@ -1,7 +1,5 @@
 import { NextRequest } from 'next/server'
-
-// Store active connections
-const clients = new Set<ReadableStreamDefaultController>()
+import { addClient, removeClient } from '@/lib/sse-broadcast'
 
 export const dynamic = 'force-dynamic'
 
@@ -10,7 +8,7 @@ export async function GET(request: NextRequest) {
 
   const stream = new ReadableStream({
     start(controller) {
-      clients.add(controller)
+      addClient(controller)
 
       // Send initial connection message
       const data = `data: ${JSON.stringify({ type: 'connected', timestamp: new Date().toISOString() })}\n\n`
@@ -28,7 +26,7 @@ export async function GET(request: NextRequest) {
       // Cleanup on close
       request.signal.addEventListener('abort', () => {
         clearInterval(keepAlive)
-        clients.delete(controller)
+        removeClient(controller)
         try {
           controller.close()
         } catch (_error) {
@@ -44,20 +42,5 @@ export async function GET(request: NextRequest) {
       'Cache-Control': 'no-cache',
       'Connection': 'keep-alive',
     },
-  })
-}
-
-// Helper function to broadcast events to all connected clients
-export function broadcastEvent(event: { type: string; data: unknown }) {
-  const encoder = new TextEncoder()
-  const message = `data: ${JSON.stringify(event)}\n\n`
-  const encoded = encoder.encode(message)
-
-  clients.forEach((controller) => {
-    try {
-      controller.enqueue(encoded)
-    } catch (_error) {
-      clients.delete(controller)
-    }
   })
 }

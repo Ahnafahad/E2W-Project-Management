@@ -196,7 +196,7 @@ function DashboardContent() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Recent Tasks</CardTitle>
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" onClick={() => window.location.href = '/tasks'}>
                 View All
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
@@ -235,7 +235,7 @@ function DashboardContent() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Project Progress</CardTitle>
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" onClick={() => window.location.href = '/projects'}>
                 View All
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
@@ -277,7 +277,7 @@ function DashboardContent() {
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold text-gray-900">Analytics Overview</h2>
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" size="sm" onClick={() => window.location.href = '/reports'}>
               <ArrowRight className="w-4 h-4 ml-2" />
               View Full Reports
             </Button>
