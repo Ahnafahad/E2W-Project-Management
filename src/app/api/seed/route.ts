@@ -22,6 +22,14 @@ export async function POST(request: NextRequest) {
     // Create team members
     const hashedPassword = await bcrypt.hash('123456', 10)
 
+    // Create admin user
+    const adminUser = await User.create({
+      email: 'hi@e2w.global',
+      name: 'Admin',
+      password: hashedPassword,
+      projectRoles: [],
+    })
+
     const ahnafAhad = await User.create({
       email: 'ahnaf816@gmail.com',
       name: 'Ahnaf Ahad',
@@ -43,14 +51,31 @@ export async function POST(request: NextRequest) {
       projectRoles: [],
     })
 
+    const annur = await User.create({
+      email: 'annur',
+      name: 'Annur',
+      password: hashedPassword,
+      projectRoles: [],
+    })
+
+    const sakib = await User.create({
+      email: 'sakib',
+      name: 'Sakib',
+      password: hashedPassword,
+      projectRoles: [],
+    })
+
     // Use first team member as the primary user
     const demoUser = ahnafAhad
 
     // Create demo projects with all team members
     const allMembers = [
+      adminUser._id.toString(),
       ahnafAhad._id.toString(),
       tanzimAhmed._id.toString(),
       fatihaFairuz._id.toString(),
+      annur._id.toString(),
+      sakib._id.toString(),
     ]
 
     const project1 = await Project.create({
@@ -178,13 +203,16 @@ export async function POST(request: NextRequest) {
       {
         message: '✅ Database seeded successfully!',
         data: {
-          users: 3,
+          users: 6,
           projects: 3,
           tasks: 3,
           teamMembers: [
+            { email: 'hi@e2w.global', password: '123456', name: 'Admin' },
             { email: 'ahnaf816@gmail.com', password: '123456', name: 'Ahnaf Ahad' },
             { email: 'tanzimahmedshofficial@gmail.com', password: '123456', name: 'Tanzim Ahmed' },
             { email: 'fabihafairuz1502@gmail.com', password: '123456', name: 'Fabiha Fairuz' },
+            { email: 'annur', password: '123456', name: 'Annur' },
+            { email: 'sakib', password: '123456', name: 'Sakib' },
           ],
         },
       },
