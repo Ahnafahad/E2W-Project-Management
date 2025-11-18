@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import connectDB from '@/lib/mongodb'
 import { Task, ProjectStats, ActivityLog } from '@/models'
 
+export const dynamic = 'force-dynamic'
+
 // GET /api/tasks - Get all tasks (with filters)
 export async function GET(request: NextRequest) {
   try {
