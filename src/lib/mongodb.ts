@@ -1,11 +1,5 @@
 import mongoose from 'mongoose'
 
-if (!process.env.MONGODB_URI) {
-  throw new Error('Please add your MONGODB_URI to .env.local')
-}
-
-const MONGODB_URI: string = process.env.MONGODB_URI
-
 /**
  * Global is used here to maintain a cached connection across hot reloads
  * in development. This prevents connections from growing exponentially
@@ -33,12 +27,16 @@ async function connectDB(): Promise<typeof mongoose> {
   }
 
   if (!cached.promise) {
+    if (!process.env.MONGODB_URI) {
+      throw new Error('Invalid/Missing environment variable: "MONGODB_URI"')
+    }
+
     const opts = {
       bufferCommands: false,
     }
 
     console.log('🔄 Connecting to MongoDB Atlas...')
-    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
+    cached.promise = mongoose.connect(process.env.MONGODB_URI, opts).then((mongoose) => {
       console.log('✅ MongoDB connected successfully!')
       return mongoose
     })
