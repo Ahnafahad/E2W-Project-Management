@@ -68,9 +68,10 @@ export async function PATCH(
 
     // Handle priorityRank changes
     if (body.priorityRank !== undefined && body.priorityRank !== currentTask.priorityRank) {
-      // Count active tasks (not deleted, not completed)
+      // Count active tasks (not deleted, not archived, not completed)
       const activeTasksCount = await Task.countDocuments({
         deleted: { $ne: true },
+        archived: { $ne: true },
         status: { $ne: 'DONE' }
       })
 
@@ -96,6 +97,7 @@ export async function PATCH(
             {
               _id: { $ne: taskId },
               deleted: { $ne: true },
+              archived: { $ne: true },
               status: { $ne: 'DONE' },
               priorityRank: { $gte: newRank, $lt: oldRank }
             },
@@ -110,6 +112,7 @@ export async function PATCH(
             {
               _id: { $ne: taskId },
               deleted: { $ne: true },
+              archived: { $ne: true },
               status: { $ne: 'DONE' },
               priorityRank: { $gt: oldRank, $lte: newRank }
             },
@@ -137,14 +140,24 @@ export async function PATCH(
       updates['dates.completed'] = null
     }
 
+    // If archived changed to true, set archivedAt date
+    if (body.archived === true && !currentTask.archived) {
+      updates.archivedAt = new Date()
+    }
+
+    // If unarchived, remove archivedAt date
+    if (body.archived === false && currentTask.archived) {
+      updates.archivedAt = null
+    }
+
     const task = await Task.findByIdAndUpdate(
       taskId,
       updates,
       { new: true, runValidators: true }
     ).lean()
 
-    // Auto-rerank if task is being marked as DONE or deleted
-    if (body.status === 'DONE' && currentTask.status !== 'DONE' && currentTask.priorityRank) {
+    // Auto-rerank if task is being marked as DONE, archived, or deleted
+    if (((body.status === 'DONE' && currentTask.status !== 'DONE') || (body.archived === true && !currentTask.archived)) && currentTask.priorityRank) {
       await reRankTasks(currentTask.priorityRank)
     }
 
@@ -230,13 +243,14 @@ export async function DELETE(
   }
 }
 
-// Helper function to re-rank tasks after completion or deletion
+// Helper function to re-rank tasks after completion, archiving, or deletion
 async function reRankTasks(removedRank: number) {
   try {
-    // Find all active tasks (not deleted, not completed) with priorityRank > removedRank
+    // Find all active tasks (not deleted, not archived, not completed) with priorityRank > removedRank
     await Task.updateMany(
       {
         deleted: { $ne: true },
+        archived: { $ne: true },
         status: { $ne: 'DONE' },
         priorityRank: { $gt: removedRank }
       },
@@ -252,7 +266,7 @@ async function reRankTasks(removedRank: number) {
 // Helper function to update project stats
 async function updateProjectStats(projectId: string) {
   try {
-    const tasks = await Task.find({ project: projectId, deleted: { $ne: true } }).lean()
+    const tasks = await Task.find({ project: projectId, deleted: { $ne: true }, archived: { $ne: true } }).lean()
 
     const now = new Date()
     const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)

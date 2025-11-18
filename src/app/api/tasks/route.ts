@@ -14,11 +14,16 @@ export async function GET(request: NextRequest) {
     const priority = searchParams.get('priority')
     const search = searchParams.get('search')
     const includeDeleted = searchParams.get('includeDeleted') === 'true'
+    const includeArchived = searchParams.get('includeArchived') === 'true'
 
     const query: Record<string, unknown> = {}
 
     if (!includeDeleted) {
       query.deleted = { $ne: true }
+    }
+
+    if (!includeArchived) {
+      query.archived = { $ne: true }
     }
 
     if (projectId) {
@@ -101,9 +106,10 @@ export async function POST(request: NextRequest) {
     // Validate and handle priorityRank
     let validatedPriorityRank = priorityRank
     if (priorityRank !== undefined) {
-      // Count active tasks (not deleted, not completed)
+      // Count active tasks (not deleted, not archived, not completed)
       const activeTasksCount = await Task.countDocuments({
         deleted: { $ne: true },
+        archived: { $ne: true },
         status: { $ne: 'DONE' }
       })
 
@@ -122,6 +128,7 @@ export async function POST(request: NextRequest) {
         await Task.updateMany(
           {
             deleted: { $ne: true },
+            archived: { $ne: true },
             status: { $ne: 'DONE' },
             priorityRank: { $gte: priorityRank }
           },
@@ -191,7 +198,7 @@ export async function POST(request: NextRequest) {
 // Helper function to update project stats
 async function updateProjectStats(projectId: string) {
   try {
-    const tasks = await Task.find({ project: projectId, deleted: { $ne: true } }).lean()
+    const tasks = await Task.find({ project: projectId, deleted: { $ne: true }, archived: { $ne: true } }).lean()
 
     const now = new Date()
     const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)

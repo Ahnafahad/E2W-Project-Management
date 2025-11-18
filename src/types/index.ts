@@ -54,6 +54,8 @@ export interface Task {
   recurring?: RecurringConfig;
   deleted?: boolean;
   deletedAt?: Date;
+  archived?: boolean;
+  archivedAt?: Date;
 }
 
 export type TaskStatus = 'TODO' | 'IN_PROGRESS' | 'DONE' | 'BLOCKED';

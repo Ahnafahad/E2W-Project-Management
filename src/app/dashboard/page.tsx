@@ -71,9 +71,16 @@ function DashboardContent() {
 
   // Calculate stats
   const stats = useMemo(() => {
-    const totalTasks = allTasks.length
+    const now = new Date()
+    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+
+    const activeTasks = allTasks.filter(task => task.status !== 'DONE').length
     const inProgressTasks = allTasks.filter(task => task.status === 'IN_PROGRESS').length
-    const completedTasks = allTasks.filter(task => task.status === 'DONE').length
+    const completedThisWeek = allTasks.filter(task =>
+      task.status === 'DONE' &&
+      task.dates.completed &&
+      new Date(task.dates.completed) >= weekAgo
+    ).length
     const overdueTasks = allTasks.filter(task =>
       task.dates.due &&
       new Date(task.dates.due) < new Date() &&
@@ -82,8 +89,8 @@ function DashboardContent() {
 
     return [
       {
-        title: "Total Tasks",
-        value: totalTasks.toString(),
+        title: "Active Tasks",
+        value: activeTasks.toString(),
         icon: CheckSquare,
         color: "text-blue-600",
         bg: "bg-blue-50",
@@ -96,8 +103,8 @@ function DashboardContent() {
         bg: "bg-amber-50",
       },
       {
-        title: "Completed",
-        value: completedTasks.toString(),
+        title: "Completed This Week",
+        value: completedThisWeek.toString(),
         icon: TrendingUp,
         color: "text-green-600",
         bg: "bg-green-50",

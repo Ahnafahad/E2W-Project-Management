@@ -102,6 +102,13 @@ const TaskSchema = new Schema<Task>(
     deletedAt: {
       type: Date,
     },
+    archived: {
+      type: Boolean,
+      default: false,
+    },
+    archivedAt: {
+      type: Date,
+    },
   },
   {
     timestamps: false, // We manage dates manually
@@ -116,11 +123,12 @@ const TaskSchema = new Schema<Task>(
 )
 
 // Indexes for performance (as per technical spec)
-TaskSchema.index({ project: 1, deleted: 1, status: 1 })
-TaskSchema.index({ assignees: 1, deleted: 1 })
-TaskSchema.index({ creator: 1, deleted: 1 }) // For "my tasks" queries
-TaskSchema.index({ 'dates.due': 1, deleted: 1 })
+TaskSchema.index({ project: 1, deleted: 1, archived: 1, status: 1 })
+TaskSchema.index({ assignees: 1, deleted: 1, archived: 1 })
+TaskSchema.index({ creator: 1, deleted: 1, archived: 1 }) // For "my tasks" queries
+TaskSchema.index({ 'dates.due': 1, deleted: 1, archived: 1 })
 TaskSchema.index({ 'dates.created': -1 })
+TaskSchema.index({ archived: 1 })
 
 const TaskModel: Model<Task> =
   mongoose.models.Task || mongoose.model<Task>('Task', TaskSchema)

@@ -44,6 +44,7 @@ function TasksContent() {
   const [filterStatus, setFilterStatus] = useState<TaskStatus | 'ALL'>('ALL')
   const [filterPriority, setFilterPriority] = useState<TaskPriority | 'ALL'>('ALL')
   const [filterProject, setFilterProject] = useState<string>('ALL')
+  const [hideCompleted, setHideCompleted] = useState(true)
   const [sortField, setSortField] = useState<SortField>('created')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
   const [showFilters, setShowFilters] = useState(false)
@@ -51,6 +52,9 @@ function TasksContent() {
   // Filter and sort tasks
   const filteredAndSortedTasks = useMemo(() => {
     const filtered = allTasks.filter(task => {
+      // Hide completed filter
+      if (hideCompleted && task.status === 'DONE') return false
+
       // Search filter
       if (searchQuery) {
         const query = searchQuery.toLowerCase()
@@ -108,7 +112,7 @@ function TasksContent() {
     })
 
     return filtered
-  }, [allTasks, searchQuery, filterStatus, filterPriority, filterProject, sortField, sortDirection])
+  }, [allTasks, searchQuery, filterStatus, filterPriority, filterProject, hideCompleted, sortField, sortDirection])
 
   // Group tasks by status for board view
   const tasksByStatus = useMemo(() => {
@@ -170,9 +174,10 @@ function TasksContent() {
     setFilterStatus('ALL')
     setFilterPriority('ALL')
     setFilterProject('ALL')
+    setHideCompleted(true)
   }
 
-  const hasActiveFilters = searchQuery || filterStatus !== 'ALL' || filterPriority !== 'ALL' || filterProject !== 'ALL'
+  const hasActiveFilters = searchQuery || filterStatus !== 'ALL' || filterPriority !== 'ALL' || filterProject !== 'ALL' || !hideCompleted
 
   return (
     <MainLayout>
@@ -342,6 +347,20 @@ function TasksContent() {
                       Clear Filters
                     </Button>
                   </div>
+                </div>
+
+                <div className="mt-4 flex items-center">
+                  <label className="flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={hideCompleted}
+                      onChange={(e) => setHideCompleted(e.target.checked)}
+                      className="w-4 h-4 text-gray-900 border-gray-300 rounded focus:ring-gray-900"
+                    />
+                    <span className="ml-2 text-sm font-medium text-gray-700">
+                      Hide completed tasks
+                    </span>
+                  </label>
                 </div>
               </div>
             )}

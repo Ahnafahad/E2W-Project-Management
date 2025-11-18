@@ -157,6 +157,19 @@ function BoardColumn({
     id: column.id,
   })
 
+  // For DONE column, limit to 5 most recent completions
+  const displayTasks = column.id === 'DONE'
+    ? tasks
+        .sort((a, b) => {
+          const aTime = a.dates.completed ? new Date(a.dates.completed).getTime() : 0
+          const bTime = b.dates.completed ? new Date(b.dates.completed).getTime() : 0
+          return bTime - aTime // Most recent first
+        })
+        .slice(0, 5)
+    : tasks
+
+  const hasMoreCompleted = column.id === 'DONE' && tasks.length > 5
+
   return (
     <Card className={`transition-colors ${isOver ? 'ring-2 ring-brand-gold bg-brand-beige' : ''}`}>
       <CardHeader className="pb-3">
@@ -181,7 +194,7 @@ function BoardColumn({
         ref={setNodeRef}
         className="space-y-3 min-h-[200px] pb-6"
       >
-        {tasks.map(task => (
+        {displayTasks.map(task => (
           <DraggableTask
             key={task._id}
             task={task}
@@ -191,6 +204,11 @@ function BoardColumn({
             onView={onTaskView}
           />
         ))}
+        {hasMoreCompleted && (
+          <div className="text-center py-2 text-xs text-gray-500 border-t border-gray-200">
+            +{tasks.length - 5} more completed tasks (use filters to view all)
+          </div>
+        )}
         {tasks.length === 0 && (
           <div className="text-center py-8 text-gray-400">
             <div className="text-xs">No tasks</div>

@@ -12,10 +12,11 @@ import {
   MoreHorizontal,
   Edit,
   Trash2,
-  User
+  User,
+  Archive
 } from 'lucide-react'
 import { formatRelativeTime, getInitials } from '@/lib/utils'
-import { UserApi } from '@/lib/api'
+import { UserApi, TaskApi } from '@/lib/api'
 import { useProjects } from '@/lib/context'
 
 interface TaskCardProps {
@@ -132,6 +133,15 @@ export function TaskCard({ task, onEdit, onDelete, onStatusChange, onView, compa
     setShowMenu(false)
   }
 
+  const handleArchive = async () => {
+    if (confirm('Archive this task? You can still find it by unchecking "Hide completed tasks" filter.')) {
+      await TaskApi.update(task._id, { archived: true })
+      // Trigger a refresh by calling onEdit with the task (parent will refresh)
+      onEdit(task)
+    }
+    setShowMenu(false)
+  }
+
   return (
     <Card
       className={`group hover:shadow-md transition-all duration-200 ${isOverdue ? 'border-red-300 bg-red-50/30' : ''} ${onView ? 'cursor-pointer' : ''}`}
@@ -193,6 +203,18 @@ export function TaskCard({ task, onEdit, onDelete, onStatusChange, onView, compa
                       <Edit className="w-3 h-3" />
                       Edit
                     </button>
+                    {task.status === 'DONE' && !task.archived && (
+                      <button
+                        className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm hover:bg-gray-50"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleArchive()
+                        }}
+                      >
+                        <Archive className="w-3 h-3" />
+                        Archive
+                      </button>
+                    )}
                     <button
                       className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-b-lg"
                       onClick={(e) => {
