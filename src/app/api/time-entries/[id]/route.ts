@@ -3,6 +3,8 @@ import connectDB from '@/lib/mongodb'
 import { TimeEntry } from '@/models/TimeEntry'
 import TaskModel from '@/models/Task'
 
+export const dynamic = 'force-dynamic'
+
 // PATCH /api/time-entries/[id] - Update a time entry
 export async function PATCH(
   request: NextRequest,

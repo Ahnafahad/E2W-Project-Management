@@ -3,6 +3,8 @@ import connectDB from '@/lib/mongodb'
 import { TimeEntry } from '@/models/TimeEntry'
 import TaskModel from '@/models/Task'
 
+export const dynamic = 'force-dynamic'
+
 // GET /api/tasks/[id]/time-entries - Get all time entries for a task
 export async function GET(
   request: NextRequest,

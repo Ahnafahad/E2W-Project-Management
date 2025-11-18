@@ -3,6 +3,8 @@ import connectDB from '@/lib/mongodb'
 import { User, Project, Task, ProjectStats } from '@/models'
 import bcrypt from 'bcryptjs'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   try {
     await connectDB()
@@ -38,7 +40,7 @@ export async function POST(request: NextRequest) {
     })
 
     const tanzimAhmed = await User.create({
-      email: 'tanzimahmedshofficial@gmail.com',
+      email: 'tanzimahmedsh.official@gmail.com',
       name: 'Tanzim Ahmed',
       password: hashedPassword,
       projectRoles: [],
@@ -52,8 +54,8 @@ export async function POST(request: NextRequest) {
     })
 
     const annur = await User.create({
-      email: 'annur',
-      name: 'Annur',
+      email: 'annurababil37@gmail.com',
+      name: 'Annur Rababil',
       password: hashedPassword,
       projectRoles: [],
     })
@@ -209,9 +211,9 @@ export async function POST(request: NextRequest) {
           teamMembers: [
             { email: 'hi@e2w.global', password: '123456', name: 'Admin' },
             { email: 'ahnaf816@gmail.com', password: '123456', name: 'Ahnaf Ahad' },
-            { email: 'tanzimahmedshofficial@gmail.com', password: '123456', name: 'Tanzim Ahmed' },
+            { email: 'tanzimahmedsh.official@gmail.com', password: '123456', name: 'Tanzim Ahmed' },
             { email: 'fabihafairuz1502@gmail.com', password: '123456', name: 'Fabiha Fairuz' },
-            { email: 'annur', password: '123456', name: 'Annur' },
+            { email: 'annurababil37@gmail.com', password: '123456', name: 'Annur Rababil' },
             { email: 'sakib', password: '123456', name: 'Sakib' },
           ],
         },
