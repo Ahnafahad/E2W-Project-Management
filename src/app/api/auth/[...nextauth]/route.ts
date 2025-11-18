@@ -4,6 +4,8 @@ import connectDB from "@/lib/mongodb"
 import User from "@/models/User"
 import bcrypt from "bcryptjs"
 
+export const dynamic = 'force-dynamic'
+
 const handler = NextAuth({
   providers: [
     CredentialsProvider({
