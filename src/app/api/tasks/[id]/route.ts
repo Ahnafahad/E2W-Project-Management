@@ -66,7 +66,10 @@ export async function PATCH(
 
     // Remove fields that shouldn't be updated directly
     delete body._id
-    delete body.dates?.created
+
+    // Extract and remove dates object to handle it separately
+    const bodyDates = body.dates
+    delete body.dates
 
     // Handle priorityRank changes
     if (body.priorityRank !== undefined && body.priorityRank !== currentTask.priorityRank) {
@@ -126,10 +129,23 @@ export async function PATCH(
       }
     }
 
-    // Update dates
+    // Build updates object
     const updates: Record<string, unknown> = {
       ...body,
       'dates.updated': new Date(),
+    }
+
+    // Handle individual date field updates (excluding created which should never be updated)
+    if (bodyDates) {
+      if (bodyDates.due !== undefined) {
+        updates['dates.due'] = bodyDates.due
+      }
+      if (bodyDates.start !== undefined) {
+        updates['dates.start'] = bodyDates.start
+      }
+      if (bodyDates.completed !== undefined) {
+        updates['dates.completed'] = bodyDates.completed
+      }
     }
 
     // If status changed to DONE, set completed date
