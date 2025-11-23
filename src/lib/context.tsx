@@ -74,7 +74,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const refreshDataForUser = async (userId: string) => {
     try {
       const [userProjects, userTasks] = await Promise.all([
-        ProjectApi.getAll(userId),
+        ProjectApi.getAll(), // Fetch all projects so all users can see all projects
         TaskApi.getAll(), // Fetch all tasks so all users can see all tasks
       ])
 

@@ -19,12 +19,8 @@ export async function GET(request: NextRequest) {
       query.deleted = { $ne: true }
     }
 
-    if (userId) {
-      query.$or = [
-        { owner: userId },
-        { members: userId }
-      ]
-    }
+    // All users can see all projects - userId parameter no longer filters projects
+    // (keeping the parameter for potential future use)
 
     const projects = await Project.find(query).sort({ updated: -1 }).lean()
 
