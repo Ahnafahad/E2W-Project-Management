@@ -75,7 +75,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     try {
       const [userProjects, userTasks] = await Promise.all([
         ProjectApi.getAll(userId),
-        TaskApi.getByUser(userId),
+        TaskApi.getAll(), // Fetch all tasks so all users can see all tasks
       ])
 
       setProjects(userProjects)

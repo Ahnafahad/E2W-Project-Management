@@ -32,13 +32,8 @@ export async function GET(request: NextRequest) {
       query.project = projectId
     }
 
-    if (userId) {
-      query.$or = [
-        { assignees: userId },
-        { creator: userId },
-        { watchers: userId }
-      ]
-    }
+    // All users can see all tasks - userId parameter no longer filters tasks
+    // (keeping the parameter for potential future use)
 
     if (status) {
       query.status = status
