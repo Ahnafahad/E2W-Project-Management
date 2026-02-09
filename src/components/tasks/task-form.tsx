@@ -211,24 +211,26 @@ export function TaskForm({ task, projectId, onSave, onCancel }: TaskFormProps) {
               </label>
               <div className="border border-gray-200 rounded-lg p-3 space-y-2 max-h-40 overflow-y-auto">
                 {teamMembers.length > 0 ? (
-                  teamMembers.map(member => (
-                    <label key={member._id} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
-                      <input
-                        type="checkbox"
-                        checked={formData.assignees.includes(member._id)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setFormData({ ...formData, assignees: [...formData.assignees, member._id] })
-                          } else {
-                            setFormData({ ...formData, assignees: formData.assignees.filter(id => id !== member._id) })
-                          }
-                        }}
-                        className="w-4 h-4 text-gray-900 border-gray-300 rounded focus:ring-gray-900"
-                      />
-                      <span className="text-sm text-gray-700">{member.name}</span>
-                      <span className="text-xs text-gray-500">({member.email})</span>
-                    </label>
-                  ))
+                  teamMembers
+                    .filter(member => member.email !== 'annurababil37@gmail.com')
+                    .map(member => (
+                      <label key={member._id} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
+                        <input
+                          type="checkbox"
+                          checked={formData.assignees.includes(member._id)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setFormData({ ...formData, assignees: [...formData.assignees, member._id] })
+                            } else {
+                              setFormData({ ...formData, assignees: formData.assignees.filter(id => id !== member._id) })
+                            }
+                          }}
+                          className="w-4 h-4 text-gray-900 border-gray-300 rounded focus:ring-gray-900"
+                        />
+                        <span className="text-sm text-gray-700">{member.name}</span>
+                        <span className="text-xs text-gray-500">({member.email})</span>
+                      </label>
+                    ))
                 ) : (
                   <p className="text-sm text-gray-500">Loading team members...</p>
                 )}

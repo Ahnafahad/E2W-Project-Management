@@ -69,7 +69,7 @@ async function updateEmails() {
     // Update Tanzim Ahmed's email
     const tanzim = await User.findOneAndUpdate(
       { name: 'Tanzim Ahmed' },
-      { email: 'tanzimahmedshofficial@gmail.com' },
+      { email: 'tanzimahmedsh.official@gmail.com' },
       { new: true }
     );
 

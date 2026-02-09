@@ -138,7 +138,7 @@ export default function SetupPage() {
                     <br />
                     <strong>• Ahnaf Ahad:</strong> ahnaf816@gmail.com (Password: 123456)
                     <br />
-                    <strong>• Tanzim Ahmed:</strong> tanzimahmedshofficial@gmail.com (Password: 123456)
+                    <strong>• Tanzim Ahmed:</strong> tanzimahmedsh.official@gmail.com (Password: 123456)
                     <br />
                     <strong>• Fabiha Fairuz:</strong> fabihafairuz1502@gmail.com (Password: 123456)
                   </p>
@@ -169,7 +169,7 @@ export default function SetupPage() {
               </div>
               <div className="p-2 bg-white rounded">
                 <div><strong>Tanzim Ahmed</strong></div>
-                <div>Email: <span className="font-mono">tanzimahmedshofficial@gmail.com</span></div>
+                <div>Email: <span className="font-mono">tanzimahmedsh.official@gmail.com</span></div>
                 <div>Password: <span className="font-mono">123456</span></div>
               </div>
               <div className="p-2 bg-white rounded">

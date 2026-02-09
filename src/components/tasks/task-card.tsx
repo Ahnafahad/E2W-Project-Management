@@ -69,7 +69,7 @@ function StatusBadge({ status, onStatusChange, taskId }: {
   return (
     <div className="relative">
       <button
-        className={`px-2 py-1 rounded-sm text-xs font-medium border ${styles[status]} hover:opacity-80`}
+        className={`px-2 py-1 rounded-sm text-xs font-medium border ${styles[status]} hover:opacity-80 touch-manipulation min-h-[32px] active:scale-95 transition-transform`}
         onClick={(e) => {
           e.stopPropagation()
           setShowDropdown(!showDropdown)
@@ -84,7 +84,7 @@ function StatusBadge({ status, onStatusChange, taskId }: {
             {statusOptions.map(option => (
               <button
                 key={option}
-                className="block w-full text-left px-3 py-2 text-sm hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg"
+                className="block w-full text-left px-3 py-2.5 text-sm hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg touch-manipulation min-h-[44px] active:bg-gray-100 transition-colors"
                 onClick={(e) => {
                   e.stopPropagation()
                   onStatusChange(taskId, option)
@@ -144,10 +144,10 @@ export function TaskCard({ task, onEdit, onDelete, onStatusChange, onView, compa
 
   return (
     <Card
-      className={`group hover:shadow-md transition-all duration-200 ${isOverdue ? 'border-red-300 bg-red-50/30' : ''} ${onView ? 'cursor-pointer' : ''}`}
+      className={`group hover:shadow-md transition-all duration-200 ${isOverdue ? 'border-red-300 bg-red-50/30' : ''} ${onView ? 'cursor-pointer' : ''} touch-manipulation active:scale-[0.99]`}
       onClick={() => onView && onView(task)}
     >
-      <CardContent className={compact ? 'p-4' : 'p-6'}>
+      <CardContent className={compact ? 'p-3 sm:p-4' : 'p-4 sm:p-6'}>
         <div className="space-y-3">
           {/* Header */}
           <div className="flex items-start justify-between">
@@ -178,51 +178,51 @@ export function TaskCard({ task, onEdit, onDelete, onStatusChange, onView, compa
 
               {showMenu && (
                 <>
-                  <div className="absolute right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-20 w-32">
+                  <div className="absolute right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-20 w-40">
                     {onView && (
                       <button
-                        className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm hover:bg-gray-50 rounded-t-lg"
+                        className="flex items-center gap-2 w-full text-left px-3 py-2.5 text-sm hover:bg-gray-50 rounded-t-lg touch-manipulation min-h-[44px] active:bg-gray-100 transition-colors"
                         onClick={(e) => {
                           e.stopPropagation()
                           onView(task)
                           setShowMenu(false)
                         }}
                       >
-                        <MessageSquare className="w-3 h-3" />
+                        <MessageSquare className="w-4 h-4" />
                         View
                       </button>
                     )}
                     <button
-                      className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm hover:bg-gray-50"
+                      className="flex items-center gap-2 w-full text-left px-3 py-2.5 text-sm hover:bg-gray-50 touch-manipulation min-h-[44px] active:bg-gray-100 transition-colors"
                       onClick={(e) => {
                         e.stopPropagation()
                         onEdit(task)
                         setShowMenu(false)
                       }}
                     >
-                      <Edit className="w-3 h-3" />
+                      <Edit className="w-4 h-4" />
                       Edit
                     </button>
                     {task.status === 'DONE' && !task.archived && (
                       <button
-                        className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm hover:bg-gray-50"
+                        className="flex items-center gap-2 w-full text-left px-3 py-2.5 text-sm hover:bg-gray-50 touch-manipulation min-h-[44px] active:bg-gray-100 transition-colors"
                         onClick={(e) => {
                           e.stopPropagation()
                           handleArchive()
                         }}
                       >
-                        <Archive className="w-3 h-3" />
+                        <Archive className="w-4 h-4" />
                         Archive
                       </button>
                     )}
                     <button
-                      className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-b-lg"
+                      className="flex items-center gap-2 w-full text-left px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 rounded-b-lg touch-manipulation min-h-[44px] active:bg-red-100 transition-colors"
                       onClick={(e) => {
                         e.stopPropagation()
                         handleDelete()
                       }}
                     >
-                      <Trash2 className="w-3 h-3" />
+                      <Trash2 className="w-4 h-4" />
                       Delete
                     </button>
                   </div>
