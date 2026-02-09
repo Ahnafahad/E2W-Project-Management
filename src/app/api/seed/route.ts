@@ -39,9 +39,9 @@ export async function POST(request: NextRequest) {
       projectRoles: [],
     })
 
-    const tanzimAhmed = await User.create({
-      email: 'tanzimahmedsh.official@gmail.com',
-      name: 'Tanzim Ahmed',
+    const fabianaMesbah = await User.create({
+      email: 'fabianamesbah@gmail.com',
+      name: 'Fabiana Mesbah',
       password: hashedPassword,
       projectRoles: [],
     })
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
 
     const annur = await User.create({
       email: 'annurababil37@gmail.com',
-      name: 'Annur Rababil',
+      name: 'Annur Ababil',
       password: hashedPassword,
       projectRoles: [],
     })
@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
     const allMembers = [
       adminUser._id.toString(),
       ahnafAhad._id.toString(),
-      tanzimAhmed._id.toString(),
+      fabianaMesbah._id.toString(),
       fatihaFairuz._id.toString(),
       annur._id.toString(),
       sakib._id.toString(),
@@ -131,7 +131,7 @@ export async function POST(request: NextRequest) {
       status: 'TODO',
       priority: 'URGENT',
       project: project2._id.toString(),
-      assignees: [tanzimAhmed._id.toString(), ahnafAhad._id.toString()],
+      assignees: [fabianaMesbah._id.toString(), ahnafAhad._id.toString()],
       creator: ahnafAhad._id.toString(),
       watchers: allMembers,
       tags: ['backend', 'security'],
@@ -150,7 +150,7 @@ export async function POST(request: NextRequest) {
       status: 'DONE',
       priority: 'MEDIUM',
       project: project3._id.toString(),
-      assignees: [fatihaFairuz._id.toString(), tanzimAhmed._id.toString()],
+      assignees: [fatihaFairuz._id.toString(), fabianaMesbah._id.toString()],
       creator: ahnafAhad._id.toString(),
       watchers: allMembers,
       tags: ['marketing', 'design'],
@@ -211,9 +211,9 @@ export async function POST(request: NextRequest) {
           teamMembers: [
             { email: 'hi@e2w.global', password: '123456', name: 'Admin' },
             { email: 'ahnaf816@gmail.com', password: '123456', name: 'Ahnaf Ahad' },
-            { email: 'tanzimahmedsh.official@gmail.com', password: '123456', name: 'Tanzim Ahmed' },
+            { email: 'fabianamesbah@gmail.com', password: '123456', name: 'Fabiana Mesbah' },
             { email: 'fabihafairuz1502@gmail.com', password: '123456', name: 'Fabiha Fairuz' },
-            { email: 'annurababil37@gmail.com', password: '123456', name: 'Annur Rababil' },
+            { email: 'annurababil37@gmail.com', password: '123456', name: 'Annur Ababil' },
             { email: 'sakib', password: '123456', name: 'Sakib' },
           ],
         },
