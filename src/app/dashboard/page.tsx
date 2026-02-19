@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { MainLayout } from "@/components/layout/main-layout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -68,6 +69,7 @@ function DashboardContent() {
   const { projects } = useProjects()
   const { allTasks, refreshData } = useTasks()
   const [showTaskForm, setShowTaskForm] = useState(false)
+  const router = useRouter()
 
   // Calculate stats
   const stats = useMemo(() => {
@@ -204,7 +206,7 @@ function DashboardContent() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Recent Tasks</CardTitle>
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" onClick={() => router.push('/tasks')}>
                 View All
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
@@ -243,7 +245,7 @@ function DashboardContent() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Project Progress</CardTitle>
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" onClick={() => router.push('/projects')}>
                 View All
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
@@ -285,7 +287,7 @@ function DashboardContent() {
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold text-gray-900">Analytics Overview</h2>
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" size="sm" onClick={() => router.push('/reports')}>
               <ArrowRight className="w-4 h-4 ml-2" />
               View Full Reports
             </Button>

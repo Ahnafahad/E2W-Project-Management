@@ -12,7 +12,9 @@ import {
   Settings,
   Plus,
   Users,
-  X
+  X,
+  Archive,
+  Megaphone
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useProjects } from '@/lib/context'
@@ -40,6 +42,11 @@ const navigation = [
     icon: CheckSquare,
   },
   {
+    name: 'Task Archive',
+    href: '/tasks/archive',
+    icon: Archive,
+  },
+  {
     name: 'Calendar',
     href: '/calendar',
     icon: Calendar,
@@ -53,6 +60,11 @@ const navigation = [
     name: 'Reports',
     href: '/reports',
     icon: BarChart3,
+  },
+  {
+    name: 'Content Calendar',
+    href: '/content-calendar',
+    icon: Megaphone,
   },
 ]
 

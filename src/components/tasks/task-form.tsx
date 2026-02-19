@@ -3,11 +3,11 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Task, TaskStatus, TaskPriority, User } from '@/types'
+import { Task, TaskStatus, TaskPriority, User, SocialPlatform } from '@/types'
 import { TaskApi, UserApi } from '@/lib/api'
 import { useAuth, useProjects, useTasks } from '@/lib/context'
 // import { FileUpload, FileAttachment } from '@/components/ui/file-upload' // Disabled until file storage backend is implemented
-import { X } from 'lucide-react'
+import { X, Megaphone } from 'lucide-react'
 
 interface TaskFormProps {
   task?: Task | null
@@ -38,6 +38,11 @@ export function TaskForm({ task, projectId, onSave, onCancel }: TaskFormProps) {
     timeEstimate: task?.timeEstimate ? Math.floor(task.timeEstimate / 60) : '', // Convert to hours
     priorityRank: task?.priorityRank || totalActiveTasksCount, // Default to last position
   })
+
+  const ALL_PLATFORMS: SocialPlatform[] = ['LinkedIn', 'Instagram', 'Twitter', 'Facebook']
+  const [isContentPost, setIsContentPost] = useState<boolean>(!!task?.contentPost?.isContentPost)
+  const [postDate, setPostDate] = useState<string>(task?.contentPost?.postDate || '')
+  const [postPlatforms, setPostPlatforms] = useState<SocialPlatform[]>(task?.contentPost?.platforms || [])
 
   // Fetch team members
   useEffect(() => {
@@ -88,6 +93,9 @@ export function TaskForm({ task, projectId, onSave, onCancel }: TaskFormProps) {
         dependencies: task?.dependencies || [],
         tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
         customFields: task?.customFields || {},
+        contentPost: isContentPost && postDate && postPlatforms.length > 0
+          ? { isContentPost: true as const, postDate, platforms: postPlatforms }
+          : undefined,
         dates: {
           created: task?.dates?.created || new Date(),
           updated: new Date(),
@@ -318,6 +326,81 @@ export function TaskForm({ task, projectId, onSave, onCancel }: TaskFormProps) {
                   placeholder="0"
                 />
               </div>
+            </div>
+
+            {/* Content Post */}
+            <div className="border border-gray-200 rounded-lg p-4 space-y-4">
+              <label className="flex items-center gap-3 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={isContentPost}
+                  onChange={e => {
+                    setIsContentPost(e.target.checked)
+                    if (!e.target.checked) {
+                      setPostDate('')
+                      setPostPlatforms([])
+                    }
+                  }}
+                  className="w-4 h-4 text-gray-900 border-gray-300 rounded focus:ring-gray-900"
+                />
+                <div className="flex items-center gap-2">
+                  <Megaphone className="w-4 h-4 text-gray-600" />
+                  <span className="text-sm font-medium text-gray-700">This is a social media post</span>
+                </div>
+              </label>
+
+              {isContentPost && (
+                <div className="space-y-4 pt-1">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Post Date <span className="text-gray-400 font-normal">(when it goes live)</span>
+                    </label>
+                    <input
+                      type="date"
+                      value={postDate}
+                      onChange={e => setPostDate(e.target.value)}
+                      className="input"
+                      required={isContentPost}
+                    />
+                    <p className="text-xs text-gray-400 mt-1">This is separate from the task due date.</p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Platforms
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {ALL_PLATFORMS.map(platform => {
+                        const selected = postPlatforms.includes(platform)
+                        const colours: Record<SocialPlatform, string> = {
+                          LinkedIn: 'bg-blue-600 text-white border-blue-600',
+                          Instagram: 'bg-pink-500 text-white border-pink-500',
+                          Twitter: 'bg-sky-400 text-white border-sky-400',
+                          Facebook: 'bg-blue-800 text-white border-blue-800',
+                        }
+                        return (
+                          <button
+                            key={platform}
+                            type="button"
+                            onClick={() => {
+                              setPostPlatforms(prev =>
+                                prev.includes(platform)
+                                  ? prev.filter(p => p !== platform)
+                                  : [...prev, platform]
+                              )
+                            }}
+                            className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                              selected ? colours[platform] : 'bg-white text-gray-600 border-gray-300 hover:border-gray-400'
+                            }`}
+                          >
+                            {platform}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* File Attachments - Temporarily Disabled */}

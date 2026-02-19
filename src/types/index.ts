@@ -25,6 +25,14 @@ export interface Project {
   deleted?: boolean;
 }
 
+export type SocialPlatform = 'LinkedIn' | 'Instagram' | 'Twitter' | 'Facebook';
+
+export interface ContentPost {
+  isContentPost: true;
+  postDate: string; // ISO date string — separate from due date
+  platforms: SocialPlatform[];
+}
+
 export interface Task {
   _id: string;
   title: string;
@@ -40,6 +48,7 @@ export interface Task {
   dependencies: string[];
   tags: string[];
   customFields?: Record<string, unknown>;
+  contentPost?: ContentPost;
   dates: {
     created: Date;
     updated: Date;
