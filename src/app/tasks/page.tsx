@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { MainLayout } from '@/components/layout/main-layout'
 import { AuthWrapper } from '@/components/auth/auth-wrapper'
 import { TaskCard } from '@/components/tasks/task-card'
@@ -35,6 +36,7 @@ type SortDirection = 'asc' | 'desc'
 function TasksContent() {
   const { allTasks, refreshData } = useTasks()
   const { projects } = useProjects()
+  const searchParams = useSearchParams()
 
   const [showTaskForm, setShowTaskForm] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
@@ -43,7 +45,7 @@ function TasksContent() {
   const [searchQuery, setSearchQuery] = useState('')
   const [filterStatus, setFilterStatus] = useState<TaskStatus | 'ALL'>('ALL')
   const [filterPriority, setFilterPriority] = useState<TaskPriority | 'ALL'>('ALL')
-  const [filterProject, setFilterProject] = useState<string>('ALL')
+  const [filterProject, setFilterProject] = useState<string>(() => searchParams.get('project') || 'ALL')
   const [excludedProjects, setExcludedProjects] = useState<Set<string>>(new Set())
   const [hideCompleted, setHideCompleted] = useState(true)
   const [sortField, setSortField] = useState<SortField>('due')

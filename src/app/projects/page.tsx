@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import { MainLayout } from '@/components/layout/main-layout'
 import { AuthWrapper } from '@/components/auth/auth-wrapper'
 import { Button } from '@/components/ui/button'
@@ -142,10 +143,11 @@ function ProjectForm({ project, onSave, onCancel }: ProjectFormProps) {
   )
 }
 
-function ProjectCard({ project, onEdit, onDelete }: {
+function ProjectCard({ project, onEdit, onDelete, onClick }: {
   project: Project
   onEdit: (project: Project) => void
   onDelete: (projectId: string) => void
+  onClick: () => void
 }) {
   const [showMenu, setShowMenu] = useState(false)
   const { allTasks } = useTasks()
@@ -171,7 +173,10 @@ function ProjectCard({ project, onEdit, onDelete }: {
   }
 
   return (
-    <Card className="group hover:shadow-md transition-all duration-200">
+    <Card
+      className="group hover:shadow-md transition-all duration-200 cursor-pointer"
+      onClick={onClick}
+    >
       <CardContent className="p-6">
         <div className="space-y-4">
           {/* Header */}
@@ -188,7 +193,7 @@ function ProjectCard({ project, onEdit, onDelete }: {
             </div>
 
             {/* Actions Menu */}
-            <div className="relative">
+            <div className="relative" onClick={(e) => e.stopPropagation()}>
               <Button
                 variant="ghost"
                 size="sm"
@@ -284,6 +289,7 @@ function ProjectCard({ project, onEdit, onDelete }: {
 
 function ProjectsContent() {
   const { projects, refreshData } = useProjects()
+  const router = useRouter()
   const [showProjectForm, setShowProjectForm] = useState(false)
   const [editingProject, setEditingProject] = useState<Project | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
@@ -358,6 +364,7 @@ function ProjectsContent() {
                 project={project}
                 onEdit={handleProjectEdit}
                 onDelete={handleProjectDelete}
+                onClick={() => router.push(`/tasks?project=${project._id}`)}
               />
             ))}
           </div>
