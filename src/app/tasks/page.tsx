@@ -22,20 +22,27 @@ import {
   SortAsc,
   SortDesc,
   Kanban,
-  GanttChart
+  GanttChart,
+  User
 } from 'lucide-react'
 import { Task, TaskStatus, TaskPriority } from '@/types'
 import { TaskApi } from '@/lib/api'
-import { useTasks, useProjects } from '@/lib/context'
+import { useTasks, useProjects, useAuth } from '@/lib/context'
 import { PageErrorBoundary } from '@/components/error-boundary'
 
 type ViewMode = 'list' | 'grid' | 'board' | 'calendar' | 'timeline'
 type SortField = 'title' | 'created' | 'due' | 'priority' | 'status'
 type SortDirection = 'asc' | 'desc'
 
+interface TeamMember {
+  id: string
+  name: string
+}
+
 function TasksContent() {
   const { allTasks, refreshData } = useTasks()
   const { projects } = useProjects()
+  const { user } = useAuth()
   const searchParams = useSearchParams()
 
   const [showTaskForm, setShowTaskForm] = useState(false)
@@ -46,11 +53,30 @@ function TasksContent() {
   const [filterStatus, setFilterStatus] = useState<TaskStatus | 'ALL'>('ALL')
   const [filterPriority, setFilterPriority] = useState<TaskPriority | 'ALL'>('ALL')
   const [filterProject, setFilterProject] = useState<string>(() => searchParams.get('project') || 'ALL')
+  const [filterAssignee, setFilterAssignee] = useState<string>('ALL')
+  const [showOnlyMyTasks, setShowOnlyMyTasks] = useState(false)
   const [excludedProjects, setExcludedProjects] = useState<Set<string>>(new Set())
   const [hideCompleted, setHideCompleted] = useState(true)
   const [sortField, setSortField] = useState<SortField>('due')
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
   const [showFilters, setShowFilters] = useState(false)
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([])
+
+  // Fetch team members for the filter dropdown
+  useEffect(() => {
+    async function fetchUsers() {
+      try {
+        const response = await fetch('/api/users')
+        const data = await response.json()
+        if (data.success) {
+          setTeamMembers(data.data.map((u: any) => ({ id: u._id, name: u.name })))
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+    fetchUsers()
+  }, [])
 
   // Filter and sort tasks
   const filteredAndSortedTasks = useMemo(() => {
@@ -76,6 +102,14 @@ function TasksContent() {
 
       // Excluded projects filter
       if (excludedProjects.size > 0 && excludedProjects.has(task.project)) return false
+
+      // Show only my tasks (takes priority over assignee dropdown)
+      if (showOnlyMyTasks && user) {
+        if (!task.assignees.includes(user._id)) return false
+      } else if (filterAssignee !== 'ALL') {
+        // Assignee dropdown filter
+        if (!task.assignees.includes(filterAssignee)) return false
+      }
 
       return true
     })
@@ -122,7 +156,7 @@ function TasksContent() {
     })
 
     return filtered
-  }, [allTasks, searchQuery, filterStatus, filterPriority, filterProject, excludedProjects, hideCompleted, sortField, sortDirection])
+  }, [allTasks, searchQuery, filterStatus, filterPriority, filterProject, filterAssignee, showOnlyMyTasks, excludedProjects, hideCompleted, sortField, sortDirection, user])
 
   // Group tasks by status for board view
   const tasksByStatus = useMemo(() => {
@@ -196,11 +230,13 @@ function TasksContent() {
     setFilterStatus('ALL')
     setFilterPriority('ALL')
     setFilterProject('ALL')
+    setFilterAssignee('ALL')
+    setShowOnlyMyTasks(false)
     setExcludedProjects(new Set())
     setHideCompleted(true)
   }
 
-  const hasActiveFilters = searchQuery || filterStatus !== 'ALL' || filterPriority !== 'ALL' || filterProject !== 'ALL' || excludedProjects.size > 0 || !hideCompleted
+  const hasActiveFilters = searchQuery || filterStatus !== 'ALL' || filterPriority !== 'ALL' || filterProject !== 'ALL' || filterAssignee !== 'ALL' || showOnlyMyTasks || excludedProjects.size > 0 || !hideCompleted
 
   return (
     <MainLayout>
@@ -215,10 +251,23 @@ function TasksContent() {
               </p>
             </div>
 
-            <Button onClick={() => setShowTaskForm(true)} className="w-full sm:w-auto">
-              <Plus className="w-4 h-4 mr-2" />
-              New Task
-            </Button>
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <Button
+                variant={showOnlyMyTasks ? 'primary' : 'secondary'}
+                onClick={() => {
+                  setShowOnlyMyTasks(!showOnlyMyTasks)
+                  if (!showOnlyMyTasks) setFilterAssignee('ALL')
+                }}
+                className="flex-1 sm:flex-none"
+              >
+                <User className="w-4 h-4 mr-2" />
+                {showOnlyMyTasks ? 'My Tasks' : 'Show Only My Tasks'}
+              </Button>
+              <Button onClick={() => setShowTaskForm(true)} className="flex-1 sm:flex-none">
+                <Plus className="w-4 h-4 mr-2" />
+                New Task
+              </Button>
+            </div>
           </div>
 
           {/* View Mode Toggles - Mobile Optimized */}
@@ -306,7 +355,7 @@ function TasksContent() {
             {/* Expanded Filters */}
             {showFilters && (
               <div className="mt-4 pt-4 border-t border-gray-200">
-                <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Status
@@ -359,13 +408,34 @@ function TasksContent() {
                     </select>
                   </div>
 
-                  <div className="flex items-end">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Person
+                    </label>
+                    <select
+                      value={filterAssignee}
+                      onChange={(e) => {
+                        setFilterAssignee(e.target.value)
+                        if (e.target.value !== 'ALL') setShowOnlyMyTasks(false)
+                      }}
+                      className="w-full text-sm border border-gray-200 rounded-md px-2 py-1"
+                    >
+                      <option value="ALL">All People</option>
+                      {teamMembers.map(member => (
+                        <option key={member.id} value={member.id}>
+                          {member.name}{member.id === user?._id ? ' (me)' : ''}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="flex items-end sm:col-span-2 lg:col-span-4">
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={clearFilters}
                       disabled={!hasActiveFilters}
-                      className="w-full"
+                      className="w-full sm:w-auto"
                     >
                       Clear Filters
                     </Button>
