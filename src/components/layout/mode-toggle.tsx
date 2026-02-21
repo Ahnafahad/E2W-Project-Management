@@ -21,7 +21,10 @@ export function ModeToggle() {
 
         {/* E2W button */}
         <button
-          onClick={() => setMode('e2w')}
+          onClick={() => {
+            console.log('[ModeToggle] Switching to E2W mode, current:', currentMode)
+            setMode('e2w')
+          }}
           className={`relative z-10 px-3 h-7 text-xs font-semibold rounded-full transition-colors duration-200 ${
             currentMode === 'e2w' ? 'text-white' : 'text-gray-500 hover:text-gray-700'
           }`}
@@ -31,7 +34,10 @@ export function ModeToggle() {
 
         {/* OCF button */}
         <button
-          onClick={() => setMode('ocf')}
+          onClick={() => {
+            console.log('[ModeToggle] Switching to OCF mode, current:', currentMode)
+            setMode('ocf')
+          }}
           className={`relative z-10 px-3 h-7 text-xs font-semibold rounded-full transition-colors duration-200 ${
             currentMode === 'ocf' ? 'text-white' : 'text-gray-500 hover:text-gray-700'
           }`}
