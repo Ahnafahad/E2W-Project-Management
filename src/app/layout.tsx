@@ -5,7 +5,6 @@ import { ModeProvider } from "@/lib/mode-context";
 import { SessionProvider } from "@/components/providers/session-provider";
 import { NotificationProvider } from "@/components/notifications/notification-provider";
 import { ErrorBoundary } from "@/components/error-boundary";
-import { RouterDebug } from "@/components/debug/router-debug";
 
 export const metadata: Metadata = {
   title: "E2W Project Management",
@@ -86,7 +85,6 @@ export default function RootLayout({
           <SessionProvider>
             <AppProvider>
               <ModeProvider>
-                <RouterDebug />
                 <NotificationProvider>
                   {children}
                 </NotificationProvider>

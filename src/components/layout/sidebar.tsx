@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState } from 'react'
 import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
+import { usePathname } from "next/navigation"
 import {
   LayoutDashboard,
   FolderOpen,
@@ -82,46 +82,12 @@ const projectColors = [
 
 export function Sidebar({ onClose }: SidebarProps) {
   const pathname = usePathname()
-  const router = useRouter()
   const { projects, refreshData } = useProjects()
   const { currentMode } = useModeContext()
   const isOCF = currentMode === 'ocf'
 
   const [isCreatingProject, setIsCreatingProject] = useState(false)
   const [newProjectName, setNewProjectName] = useState('')
-
-  // Debug: track every nav click and router state
-  const handleNavClick = useCallback((itemName: string, itemHref: string, e: React.MouseEvent) => {
-    console.log(`[NAV] Click: "${itemName}" → ${itemHref} | mode=${currentMode} | current=${pathname}`)
-    console.log(`[NAV] defaultPrevented=${e.defaultPrevented}`)
-
-    if (onClose) onClose()
-
-    // Monitor if navigation actually completes
-    const startPath = window.location.pathname
-    setTimeout(() => {
-      const endPath = window.location.pathname
-      if (endPath === startPath && startPath !== itemHref) {
-        console.error(`[NAV] STUCK! After 500ms still on ${endPath}, expected ${itemHref}`)
-        console.error(`[NAV] Attempting router.push...`)
-        try {
-          router.push(itemHref)
-        } catch (err) {
-          console.error(`[NAV] router.push threw:`, err)
-        }
-        // Check again after router.push
-        setTimeout(() => {
-          const finalPath = window.location.pathname
-          if (finalPath !== itemHref) {
-            console.error(`[NAV] router.push ALSO FAILED! Still on ${finalPath}. Forcing window.location`)
-            window.location.href = itemHref
-          }
-        }, 500)
-      } else {
-        console.log(`[NAV] OK: navigated to ${endPath}`)
-      }
-    }, 500)
-  }, [currentMode, pathname, onClose, router])
 
   const handleCreateProject = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -186,7 +152,7 @@ export function Sidebar({ onClose }: SidebarProps) {
               <Link
                 key={item.name}
                 href={item.href}
-                onClick={(e) => handleNavClick(item.name, item.href, e)}
+                onClick={onClose}
                 className={cn(
                   "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors",
                   isActive ? activeClass : inactiveClass
@@ -317,7 +283,7 @@ export function Sidebar({ onClose }: SidebarProps) {
         <div className="pt-4 border-t border-gray-100">
           <Link
             href="/settings"
-            onClick={(e) => handleNavClick('Settings', '/settings', e)}
+            onClick={onClose}
             className={cn(
               "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors",
               pathname === '/settings' ? activeClass : inactiveClass

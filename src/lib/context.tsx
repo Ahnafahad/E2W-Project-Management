@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { User, Project, Task } from '@/types'
 import { ProjectApi, TaskApi, UserSession } from './api'
 import { useSession } from 'next-auth/react'
@@ -136,36 +136,38 @@ export function useAuth() {
   return { user, isAuthenticated }
 }
 
-// Hook for projects — filters by mode
+// Hook for projects — filters by mode (memoized to prevent infinite re-renders)
 export function useProjects() {
   const { allProjects, currentProject, setCurrentProject, refreshData } = useApp()
   const { currentMode } = useModeContext()
 
-  const projects = currentMode === 'ocf'
-    ? allProjects.filter(p => p.isOCF)
-    : allProjects
-
-  console.log(`[useProjects] mode=${currentMode} total=${allProjects.length} filtered=${projects.length}`)
+  const projects = useMemo(
+    () => currentMode === 'ocf' ? allProjects.filter(p => p.isOCF) : allProjects,
+    [allProjects, currentMode]
+  )
 
   return { projects, currentProject, setCurrentProject, refreshData }
 }
 
-// Hook for tasks — filters by mode
+// Hook for tasks — filters by mode (memoized to prevent infinite re-renders)
 export function useTasks(projectId?: string) {
   const { allProjects, allTasks, refreshData } = useApp()
   const { currentMode } = useModeContext()
 
-  const ocfProjectIds = new Set(allProjects.filter(p => p.isOCF).map(p => p._id))
+  const ocfProjectIds = useMemo(
+    () => new Set(allProjects.filter(p => p.isOCF).map(p => p._id)),
+    [allProjects]
+  )
 
-  const modeTasks = currentMode === 'ocf'
-    ? allTasks.filter(t => ocfProjectIds.has(t.project))
-    : allTasks
+  const modeTasks = useMemo(
+    () => currentMode === 'ocf' ? allTasks.filter(t => ocfProjectIds.has(t.project)) : allTasks,
+    [allTasks, currentMode, ocfProjectIds]
+  )
 
-  const filteredTasks = projectId
-    ? modeTasks.filter(task => task.project === projectId)
-    : modeTasks
-
-  console.log(`[useTasks] mode=${currentMode} total=${allTasks.length} filtered=${modeTasks.length} ocfProjectIds=${[...ocfProjectIds].join(',')}`)
+  const filteredTasks = useMemo(
+    () => projectId ? modeTasks.filter(task => task.project === projectId) : modeTasks,
+    [modeTasks, projectId]
+  )
 
   return { tasks: filteredTasks, allTasks: modeTasks, refreshData }
 }
