@@ -57,6 +57,7 @@ export function ModeProvider({ children }: { children: React.ReactNode }) {
 
   const setMode = (mode: AppMode) => {
     if (!canToggle) return
+    console.log(`[MODE] Switching from ${currentMode} → ${mode}`)
     setCurrentMode(mode)
     localStorage.setItem(MODE_STORAGE_KEY, mode)
   }

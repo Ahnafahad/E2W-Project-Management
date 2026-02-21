@@ -145,6 +145,8 @@ export function useProjects() {
     ? allProjects.filter(p => p.isOCF)
     : allProjects
 
+  console.log(`[useProjects] mode=${currentMode} total=${allProjects.length} filtered=${projects.length}`)
+
   return { projects, currentProject, setCurrentProject, refreshData }
 }
 
@@ -162,6 +164,8 @@ export function useTasks(projectId?: string) {
   const filteredTasks = projectId
     ? modeTasks.filter(task => task.project === projectId)
     : modeTasks
+
+  console.log(`[useTasks] mode=${currentMode} total=${allTasks.length} filtered=${modeTasks.length} ocfProjectIds=${[...ocfProjectIds].join(',')}`)
 
   return { tasks: filteredTasks, allTasks: modeTasks, refreshData }
 }

@@ -90,30 +90,35 @@ export function Sidebar({ onClose }: SidebarProps) {
   const [isCreatingProject, setIsCreatingProject] = useState(false)
   const [newProjectName, setNewProjectName] = useState('')
 
-  // Debug: log nav click in OCF mode
+  // Debug: track every nav click and router state
   const handleNavClick = useCallback((itemName: string, itemHref: string, e: React.MouseEvent) => {
-    console.log(`[Sidebar Debug] Click: "${itemName}" → ${itemHref}`)
-    console.log(`[Sidebar Debug] Mode: ${currentMode}, pathname: ${pathname}`)
-    console.log(`[Sidebar Debug] Event target:`, e.target)
-    console.log(`[Sidebar Debug] Event currentTarget:`, e.currentTarget)
-    console.log(`[Sidebar Debug] defaultPrevented: ${e.defaultPrevented}`)
-    console.log(`[Sidebar Debug] onClose defined: ${!!onClose}`)
-
-    // Check if something is blocking
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
-    const elemAtPoint = document.elementFromPoint(e.clientX, e.clientY)
-    console.log(`[Sidebar Debug] Element at click point:`, elemAtPoint)
-    console.log(`[Sidebar Debug] Link rect:`, rect)
+    console.log(`[NAV] Click: "${itemName}" → ${itemHref} | mode=${currentMode} | current=${pathname}`)
+    console.log(`[NAV] defaultPrevented=${e.defaultPrevented}`)
 
     if (onClose) onClose()
 
-    // Force navigation as backup if Link doesn't work
+    // Monitor if navigation actually completes
+    const startPath = window.location.pathname
     setTimeout(() => {
-      const newPathname = window.location.pathname
-      console.log(`[Sidebar Debug] After 500ms, pathname is: ${newPathname}`)
-      if (newPathname !== itemHref) {
-        console.warn(`[Sidebar Debug] Navigation didn't happen! Forcing router.push("${itemHref}")`)
-        router.push(itemHref)
+      const endPath = window.location.pathname
+      if (endPath === startPath && startPath !== itemHref) {
+        console.error(`[NAV] STUCK! After 500ms still on ${endPath}, expected ${itemHref}`)
+        console.error(`[NAV] Attempting router.push...`)
+        try {
+          router.push(itemHref)
+        } catch (err) {
+          console.error(`[NAV] router.push threw:`, err)
+        }
+        // Check again after router.push
+        setTimeout(() => {
+          const finalPath = window.location.pathname
+          if (finalPath !== itemHref) {
+            console.error(`[NAV] router.push ALSO FAILED! Still on ${finalPath}. Forcing window.location`)
+            window.location.href = itemHref
+          }
+        }, 500)
+      } else {
+        console.log(`[NAV] OK: navigated to ${endPath}`)
       }
     }, 500)
   }, [currentMode, pathname, onClose, router])
