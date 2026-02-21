@@ -258,6 +258,26 @@ export function TaskCard({ task, onEdit, onDelete, onStatusChange, onView, compa
                 +{task.tags.length - 2} more
               </span>
             )}
+
+            {/* External Assignees */}
+            {task.externalAssignees && task.externalAssignees.length > 0 && (
+              <>
+                {task.externalAssignees.slice(0, 2).map(name => (
+                  <span
+                    key={name}
+                    className="px-2 py-0.5 rounded-full text-xs italic text-blue-700 bg-blue-50 border border-blue-200"
+                    title="External assignee"
+                  >
+                    {name}
+                  </span>
+                ))}
+                {task.externalAssignees.length > 2 && (
+                  <span className="text-xs text-gray-400 italic">
+                    +{task.externalAssignees.length - 2} ext.
+                  </span>
+                )}
+              </>
+            )}
           </div>
 
           {/* Meta Information */}
@@ -307,7 +327,7 @@ export function TaskCard({ task, onEdit, onDelete, onStatusChange, onView, compa
               {/* Assignee */}
               {assigneeUsers.length > 0 && (
                 <div className="flex -space-x-1">
-                  {assigneeUsers.slice(0, 3).map((user, index) => {
+                  {assigneeUsers.slice(0, 3).map((user) => {
                     return (
                       <div
                         key={user._id}

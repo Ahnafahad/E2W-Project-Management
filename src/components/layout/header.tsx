@@ -7,8 +7,10 @@ import { signOut } from 'next-auth/react'
 import { Search, Bell, Settings, User, LogOut, ChevronDown, Menu } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useAuth } from '@/lib/context'
+import { useModeContext } from '@/lib/mode-context'
 import { getInitials } from '@/lib/utils'
 import { GlobalSearch } from '@/components/search/global-search'
+import { ModeToggle } from '@/components/layout/mode-toggle'
 
 interface HeaderProps {
   onMenuClick?: () => void
@@ -16,6 +18,7 @@ interface HeaderProps {
 
 export function Header({ onMenuClick }: HeaderProps = {}) {
   const { user } = useAuth()
+  const { currentMode } = useModeContext()
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [showGlobalSearch, setShowGlobalSearch] = useState(false)
 
@@ -40,6 +43,8 @@ export function Header({ onMenuClick }: HeaderProps = {}) {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [])
 
+  const isOCF = currentMode === 'ocf'
+
   return (
     <header className="h-16 bg-white border-b border-gray-200 sticky top-0 z-50">
       <div className="h-full flex items-center justify-between px-4 lg:px-8">
@@ -57,20 +62,43 @@ export function Header({ onMenuClick }: HeaderProps = {}) {
             </Button>
           )}
 
-          {/* Logo */}
+          {/* Logo — switches between E2W and OCF based on mode */}
           <Link href="/dashboard" className="flex items-center gap-3">
-          <Image
-            src="/E2W Black Logo.png"
-            alt="E2W Global"
-            width={32}
-            height={32}
-            priority
-          />
-            <div className="flex flex-col">
-              <span className="text-lg font-semibold text-gray-900">E2W</span>
-              <span className="text-xs text-gray-500 hidden sm:block">PROJECT MANAGEMENT</span>
-            </div>
+            {isOCF ? (
+              <>
+                <Image
+                  src="/OCF Brandkit.png"
+                  alt="Oxford Cambridge Fellowship"
+                  width={120}
+                  height={32}
+                  priority
+                  className="h-8 w-auto object-contain"
+                />
+                <div className="hidden sm:flex flex-col">
+                  <span className="text-xs font-semibold text-[#1e3a6e] uppercase tracking-wide leading-none">
+                    OXFORD CAMBRIDGE FELLOWSHIP
+                  </span>
+                </div>
+              </>
+            ) : (
+              <>
+                <Image
+                  src="/E2W Black Logo.png"
+                  alt="E2W Global"
+                  width={32}
+                  height={32}
+                  priority
+                />
+                <div className="flex flex-col">
+                  <span className="text-lg font-semibold text-gray-900">E2W</span>
+                  <span className="text-xs text-gray-500 hidden sm:block">PROJECT MANAGEMENT</span>
+                </div>
+              </>
+            )}
           </Link>
+
+          {/* Mode Toggle */}
+          <ModeToggle />
         </div>
 
         {/* Search Bar */}

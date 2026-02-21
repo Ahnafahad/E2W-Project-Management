@@ -18,6 +18,7 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useProjects } from '@/lib/context'
+import { useModeContext } from '@/lib/mode-context'
 import { ProjectStore } from '@/lib/storage'
 import { cn, truncateText } from "@/lib/utils"
 
@@ -82,6 +83,9 @@ const projectColors = [
 export function Sidebar({ onClose }: SidebarProps) {
   const pathname = usePathname()
   const { projects, refreshData } = useProjects()
+  const { currentMode } = useModeContext()
+  const isOCF = currentMode === 'ocf'
+
   const [isCreatingProject, setIsCreatingProject] = useState(false)
   const [newProjectName, setNewProjectName] = useState('')
 
@@ -110,6 +114,15 @@ export function Sidebar({ onClose }: SidebarProps) {
     }
   }
 
+  // Active nav link styles differ by mode
+  const activeClass = isOCF
+    ? 'bg-[#1e3a6e] text-white font-medium'
+    : 'bg-gray-100 text-gray-900 font-medium'
+
+  const inactiveClass = isOCF
+    ? 'text-gray-600 hover:bg-blue-50 hover:text-[#1e3a6e]'
+    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+
   return (
     <div className="w-60 bg-white border-r border-gray-200 h-[calc(100vh-64px)] overflow-y-auto">
       <div className="p-4 space-y-6">
@@ -121,6 +134,16 @@ export function Sidebar({ onClose }: SidebarProps) {
             </Button>
           </div>
         )}
+
+        {/* OCF mode badge */}
+        {isOCF && (
+          <div className="px-3 py-2 bg-[#1e3a6e]/10 rounded-lg">
+            <p className="text-xs font-semibold text-[#1e3a6e] uppercase tracking-wide">
+              OCF Mode
+            </p>
+          </div>
+        )}
+
         {/* Main Navigation */}
         <nav className="space-y-1">
           {navigation.map((item) => {
@@ -129,12 +152,10 @@ export function Sidebar({ onClose }: SidebarProps) {
               <Link
                 key={item.name}
                 href={item.href}
-                onClick={onClose} // Close sidebar on mobile when navigating
+                onClick={onClose}
                 className={cn(
                   "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors",
-                  isActive
-                    ? "bg-gray-100 text-gray-900 font-medium"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                  isActive ? activeClass : inactiveClass
                 )}
               >
                 <item.icon className="w-5 h-5" />
@@ -148,20 +169,23 @@ export function Sidebar({ onClose }: SidebarProps) {
         <div>
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-              Projects
+              {isOCF ? 'OCF Projects' : 'Projects'}
             </h3>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 w-6 p-0"
-              onClick={() => setIsCreatingProject(true)}
-            >
-              <Plus className="w-3 h-3" />
-            </Button>
+            {/* Hide "New Project" button in OCF mode */}
+            {!isOCF && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0"
+                onClick={() => setIsCreatingProject(true)}
+              >
+                <Plus className="w-3 h-3" />
+              </Button>
+            )}
           </div>
 
-          {/* New Project Form */}
-          {isCreatingProject && (
+          {/* New Project Form — only in E2W mode */}
+          {!isOCF && isCreatingProject && (
             <form onSubmit={handleCreateProject} className="mb-3 p-2 bg-gray-50 rounded-lg">
               <input
                 type="text"
@@ -200,19 +224,17 @@ export function Sidebar({ onClose }: SidebarProps) {
           <nav className="space-y-1">
             {projects.map((project, index) => {
               const isActive = pathname === '/projects'
-              const color = projectColors[index % projectColors.length]
+              const color = isOCF ? 'bg-[#1e3a6e]' : projectColors[index % projectColors.length]
 
               return (
                 <Link
                   key={project._id}
                   href="/projects"
                   prefetch={false}
-                  onClick={onClose} // Close sidebar on mobile when navigating
+                  onClick={onClose}
                   className={cn(
                     "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors",
-                    isActive
-                      ? "bg-gray-100 text-gray-900 font-medium"
-                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                    isActive ? activeClass : inactiveClass
                   )}
                   title={project.name}
                 >
@@ -232,32 +254,39 @@ export function Sidebar({ onClose }: SidebarProps) {
 
         {/* Quick Actions */}
         <div className="space-y-2">
-          <Button className="w-full justify-start" size="sm">
+          <Button
+            className={cn(
+              "w-full justify-start",
+              isOCF && "bg-[#1e3a6e] hover:bg-[#162d58] text-white"
+            )}
+            size="sm"
+          >
             <Plus className="w-4 h-4 mr-2" />
             New Task
           </Button>
 
-          <Button
-            variant="secondary"
-            className="w-full justify-start"
-            size="sm"
-            onClick={() => setIsCreatingProject(true)}
-          >
-            <FolderOpen className="w-4 h-4 mr-2" />
-            New Project
-          </Button>
+          {/* New Project button — hidden in OCF mode */}
+          {!isOCF && (
+            <Button
+              variant="secondary"
+              className="w-full justify-start"
+              size="sm"
+              onClick={() => setIsCreatingProject(true)}
+            >
+              <FolderOpen className="w-4 h-4 mr-2" />
+              New Project
+            </Button>
+          )}
         </div>
 
         {/* Settings */}
         <div className="pt-4 border-t border-gray-100">
           <Link
             href="/settings"
-            onClick={onClose} // Close sidebar on mobile when navigating
+            onClick={onClose}
             className={cn(
               "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors",
-              pathname === '/settings'
-                ? "bg-gray-100 text-gray-900 font-medium"
-                : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+              pathname === '/settings' ? activeClass : inactiveClass
             )}
           >
             <Settings className="w-5 h-5" />

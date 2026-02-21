@@ -94,6 +94,9 @@ const TaskSchema = new Schema<Task>(
       type: Number,
       default: 0,
     },
+    externalAssignees: [{
+      type: String,
+    }],
     recurring: RecurringConfigSchema,
     deleted: {
       type: Boolean,

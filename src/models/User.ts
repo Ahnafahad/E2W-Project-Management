@@ -33,6 +33,11 @@ const UserSchema = new Schema<User>(
     avatar: {
       type: String,
     },
+    accessMode: {
+      type: String,
+      enum: ['both', 'ocf_only'],
+      default: 'both',
+    },
     projectRoles: [ProjectRoleSchema],
     lastLogin: {
       type: Date,

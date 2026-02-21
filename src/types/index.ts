@@ -7,6 +7,7 @@ export interface User {
   created: Date;
   lastLogin?: Date;
   projectRoles: ProjectRole[];
+  accessMode?: 'both' | 'ocf_only';
 }
 
 export interface ProjectRole {
@@ -23,6 +24,7 @@ export interface Project {
   created: Date;
   updated: Date;
   deleted?: boolean;
+  isOCF?: boolean;
 }
 
 export type SocialPlatform = 'LinkedIn' | 'Instagram' | 'Twitter' | 'Facebook';
@@ -60,6 +62,7 @@ export interface Task {
   timeTracked?: number;
   attachments: Attachment[];
   commentCount: number;
+  externalAssignees?: string[];
   recurring?: RecurringConfig;
   deleted?: boolean;
   deletedAt?: Date;

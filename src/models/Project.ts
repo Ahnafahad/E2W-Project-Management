@@ -19,6 +19,10 @@ const ProjectSchema = new Schema<Project>(
     members: [{
       type: String,
     }],
+    isOCF: {
+      type: Boolean,
+      default: false,
+    },
     deleted: {
       type: Boolean,
       default: false,

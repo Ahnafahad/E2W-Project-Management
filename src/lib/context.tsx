@@ -4,15 +4,16 @@ import React, { createContext, useContext, useEffect, useState } from 'react'
 import { User, Project, Task } from '@/types'
 import { ProjectApi, TaskApi, UserSession } from './api'
 import { useSession } from 'next-auth/react'
+import { useModeContext } from './mode-context'
 
 interface AppState {
   // Auth
   user: User | null
   isAuthenticated: boolean
 
-  // Data
-  projects: Project[]
-  tasks: Task[]
+  // Raw unfiltered data — mode filtering happens in hooks
+  allProjects: Project[]
+  allTasks: Task[]
   currentProject: Project | null
 
   // Actions
@@ -28,8 +29,8 @@ const AppContext = createContext<AppState | null>(null)
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession()
   const [user, setUser] = useState<User | null>(null)
-  const [projects, setProjects] = useState<Project[]>([])
-  const [tasks, setTasks] = useState<Task[]>([])
+  const [allProjects, setAllProjects] = useState<Project[]>([])
+  const [allTasks, setAllTasks] = useState<Task[]>([])
   const [currentProject, setCurrentProject] = useState<Project | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
@@ -60,8 +61,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       } else {
         // Not authenticated
         setUser(null)
-        setProjects([])
-        setTasks([])
+        setAllProjects([])
+        setAllTasks([])
         setCurrentProject(null)
         setIsLoading(false)
       }
@@ -78,8 +79,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         TaskApi.getAll(), // Fetch all tasks so all users can see all tasks
       ])
 
-      setProjects(userProjects)
-      setTasks(userTasks)
+      setAllProjects(userProjects)
+      setAllTasks(userTasks)
 
       // Set current project to first project if exists
       if (userProjects.length > 0 && !currentProject) {
@@ -105,9 +106,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     user,
     isAuthenticated: !!user,
 
-    // Data
-    projects,
-    tasks,
+    // Data (unfiltered — hooks apply mode filtering)
+    allProjects,
+    allTasks,
     currentProject,
 
     // Actions
@@ -135,19 +136,32 @@ export function useAuth() {
   return { user, isAuthenticated }
 }
 
-// Hook for projects
+// Hook for projects — filters by mode
 export function useProjects() {
-  const { projects, currentProject, setCurrentProject, refreshData } = useApp()
+  const { allProjects, currentProject, setCurrentProject, refreshData } = useApp()
+  const { currentMode } = useModeContext()
+
+  const projects = currentMode === 'ocf'
+    ? allProjects.filter(p => p.isOCF)
+    : allProjects
+
   return { projects, currentProject, setCurrentProject, refreshData }
 }
 
-// Hook for tasks
+// Hook for tasks — filters by mode
 export function useTasks(projectId?: string) {
-  const { tasks, refreshData } = useApp()
+  const { allProjects, allTasks, refreshData } = useApp()
+  const { currentMode } = useModeContext()
+
+  const ocfProjectIds = new Set(allProjects.filter(p => p.isOCF).map(p => p._id))
+
+  const modeTasks = currentMode === 'ocf'
+    ? allTasks.filter(t => ocfProjectIds.has(t.project))
+    : allTasks
 
   const filteredTasks = projectId
-    ? tasks.filter(task => task.project === projectId)
-    : tasks
+    ? modeTasks.filter(task => task.project === projectId)
+    : modeTasks
 
-  return { tasks: filteredTasks, allTasks: tasks, refreshData }
+  return { tasks: filteredTasks, allTasks: modeTasks, refreshData }
 }

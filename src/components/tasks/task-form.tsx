@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Task, TaskStatus, TaskPriority, User, SocialPlatform } from '@/types'
 import { TaskApi, UserApi } from '@/lib/api'
 import { useAuth, useProjects, useTasks } from '@/lib/context'
+import { useModeContext } from '@/lib/mode-context'
+import { cn } from '@/lib/utils'
 // import { FileUpload, FileAttachment } from '@/components/ui/file-upload' // Disabled until file storage backend is implemented
 import { X, Megaphone } from 'lucide-react'
 
@@ -20,7 +22,16 @@ export function TaskForm({ task, projectId, onSave, onCancel }: TaskFormProps) {
   const { user } = useAuth()
   const { projects } = useProjects()
   const { allTasks } = useTasks()
+  const { currentMode } = useModeContext()
+  const isOCF = currentMode === 'ocf'
+
   const [teamMembers, setTeamMembers] = useState<User[]>([])
+
+  // OCF project is the only project visible in OCF mode
+  const ocfProject = projects.find(p => p.isOCF)
+  const defaultProject = isOCF
+    ? (ocfProject?._id || '')
+    : (task?.project || projectId || '')
 
   // Calculate available rank positions based on existing non-deleted, non-completed tasks
   const activeTasks = allTasks.filter(t => t.status !== 'DONE' && !t.deleted)
@@ -31,7 +42,7 @@ export function TaskForm({ task, projectId, onSave, onCancel }: TaskFormProps) {
     description: task?.description || '',
     status: task?.status || 'TODO' as TaskStatus,
     priority: task?.priority || 'MEDIUM' as TaskPriority,
-    project: task?.project || projectId || '',
+    project: defaultProject,
     assignees: task?.assignees || [],
     tags: task?.tags?.join(', ') || '',
     dueDate: task?.dates?.due ? new Date(task.dates.due).toISOString().split('T')[0] : '',
@@ -43,6 +54,10 @@ export function TaskForm({ task, projectId, onSave, onCancel }: TaskFormProps) {
   const [isContentPost, setIsContentPost] = useState<boolean>(!!task?.contentPost?.isContentPost)
   const [postDate, setPostDate] = useState<string>(task?.contentPost?.postDate || '')
   const [postPlatforms, setPostPlatforms] = useState<SocialPlatform[]>(task?.contentPost?.platforms || [])
+
+  // External assignees (OCF mode only)
+  const [externalAssigneeInput, setExternalAssigneeInput] = useState('')
+  const [externalAssignees, setExternalAssignees] = useState<string[]>(task?.externalAssignees || [])
 
   // Fetch team members
   useEffect(() => {
@@ -57,18 +72,24 @@ export function TaskForm({ task, projectId, onSave, onCancel }: TaskFormProps) {
     fetchTeamMembers()
   }, [])
 
-  // Disabled until file storage backend is implemented
-  // const [attachments, setAttachments] = useState<FileAttachment[]>(
-  //   task?.attachments?.map(att => ({
-  //     id: att.fileId,
-  //     name: att.name,
-  //     size: att.size,
-  //     type: att.type,
-  //     data: att.fileId, // fileId stores the base64 data or URL
-  //     uploadedAt: att.uploadedAt,
-  //     uploadedBy: 'unknown' // Attachment type doesn't have uploadedBy
-  //   })) || []
-  // )
+  // When OCF project becomes available, lock the project field
+  useEffect(() => {
+    if (isOCF && ocfProject && !formData.project) {
+      setFormData(prev => ({ ...prev, project: ocfProject._id }))
+    }
+  }, [isOCF, ocfProject])
+
+  const addExternalAssignee = () => {
+    const trimmed = externalAssigneeInput.trim()
+    if (trimmed && !externalAssignees.includes(trimmed)) {
+      setExternalAssignees(prev => [...prev, trimmed])
+    }
+    setExternalAssigneeInput('')
+  }
+
+  const removeExternalAssignee = (name: string) => {
+    setExternalAssignees(prev => prev.filter(a => a !== name))
+  }
 
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
@@ -107,6 +128,7 @@ export function TaskForm({ task, projectId, onSave, onCancel }: TaskFormProps) {
         timeTracked: task?.timeTracked || 0,
         attachments: task?.attachments || [], // File uploads disabled until backend storage is implemented
         commentCount: task?.commentCount || 0,
+        externalAssignees: isOCF ? externalAssignees : [],
         recurring: task?.recurring,
         deleted: false,
       }
@@ -138,7 +160,14 @@ export function TaskForm({ task, projectId, onSave, onCancel }: TaskFormProps) {
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
       <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>{task ? 'Edit Task' : 'Create New Task'}</CardTitle>
+          <CardTitle>
+            {task ? 'Edit Task' : 'Create New Task'}
+            {isOCF && (
+              <span className="ml-2 text-xs font-normal text-[#1e3a6e] bg-[#1e3a6e]/10 px-2 py-0.5 rounded-full">
+                OCF
+              </span>
+            )}
+          </CardTitle>
           <Button variant="ghost" size="sm" onClick={onCancel}>
             <X className="w-4 h-4" />
           </Button>
@@ -180,19 +209,27 @@ export function TaskForm({ task, projectId, onSave, onCancel }: TaskFormProps) {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Project *
                 </label>
-                <select
-                  required
-                  value={formData.project}
-                  onChange={(e) => setFormData({ ...formData, project: e.target.value })}
-                  className="input"
-                >
-                  <option value="">Select project</option>
-                  {projects.map(project => (
-                    <option key={project._id} value={project._id}>
-                      {project.name}
-                    </option>
-                  ))}
-                </select>
+                {isOCF ? (
+                  // In OCF mode: project is locked to the OCF project
+                  <div className="input bg-gray-50 text-gray-600 cursor-not-allowed flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-[#1e3a6e] inline-block" />
+                    {ocfProject?.name || 'Oxford Cambridge Fellowship'}
+                  </div>
+                ) : (
+                  <select
+                    required
+                    value={formData.project}
+                    onChange={(e) => setFormData({ ...formData, project: e.target.value })}
+                    className="input"
+                  >
+                    <option value="">Select project</option>
+                    {projects.map(project => (
+                      <option key={project._id} value={project._id}>
+                        {project.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
 
               <div>
@@ -244,6 +281,58 @@ export function TaskForm({ task, projectId, onSave, onCancel }: TaskFormProps) {
                 )}
               </div>
             </div>
+
+            {/* External Assignees — OCF mode only */}
+            {isOCF && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  External Assignees
+                  <span className="ml-1 text-xs text-gray-400 font-normal">(not in the system)</span>
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={externalAssigneeInput}
+                    onChange={(e) => setExternalAssigneeInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault()
+                        addExternalAssignee()
+                      }
+                    }}
+                    className="input flex-1"
+                    placeholder="Name or organization (external)"
+                  />
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    onClick={addExternalAssignee}
+                  >
+                    Add
+                  </Button>
+                </div>
+                {externalAssignees.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {externalAssignees.map(name => (
+                      <span
+                        key={name}
+                        className="flex items-center gap-1 px-2 py-0.5 bg-blue-50 border border-blue-200 text-blue-800 text-xs rounded-full"
+                      >
+                        {name}
+                        <button
+                          type="button"
+                          onClick={() => removeExternalAssignee(name)}
+                          className="hover:text-blue-600"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Priority and Due Date Row */}
             <div className="grid grid-cols-2 gap-4">
@@ -416,16 +505,6 @@ export function TaskForm({ task, projectId, onSave, onCancel }: TaskFormProps) {
                   </div>
                 </div>
               </div>
-              {/* Commented out until file storage backend is implemented
-              <FileUpload
-                files={attachments}
-                onFilesChange={setAttachments}
-                maxFiles={5}
-                maxFileSize={10 * 1024 * 1024} // 10MB
-                acceptedTypes={['image/*', 'application/pdf', 'text/*', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']}
-                compact
-              />
-              */}
             </div>
 
             {error && (
@@ -439,7 +518,10 @@ export function TaskForm({ task, projectId, onSave, onCancel }: TaskFormProps) {
               <Button
                 type="submit"
                 disabled={isLoading || !formData.title.trim() || !formData.project}
-                className="flex-1"
+                className={cn(
+                  "flex-1",
+                  isOCF && "bg-[#1e3a6e] hover:bg-[#162d58]"
+                )}
               >
                 {isLoading ? 'Saving...' : (task ? 'Update Task' : 'Create Task')}
               </Button>
@@ -458,3 +540,4 @@ export function TaskForm({ task, projectId, onSave, onCancel }: TaskFormProps) {
     </div>
   )
 }
+

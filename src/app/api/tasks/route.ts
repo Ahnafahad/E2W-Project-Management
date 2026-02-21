@@ -89,7 +89,8 @@ export async function POST(request: NextRequest) {
       parent,
       dependencies = [],
       customFields = {},
-      recurring
+      recurring,
+      externalAssignees = [],
     } = body
 
     // Validation
@@ -160,6 +161,7 @@ export async function POST(request: NextRequest) {
       dependencies,
       customFields,
       recurring,
+      externalAssignees,
       attachments: [],
       commentCount: 0,
     })

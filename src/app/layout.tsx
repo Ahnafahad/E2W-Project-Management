@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { AppProvider } from "@/lib/context";
+import { ModeProvider } from "@/lib/mode-context";
 import { SessionProvider } from "@/components/providers/session-provider";
 import { NotificationProvider } from "@/components/notifications/notification-provider";
 import { ErrorBoundary } from "@/components/error-boundary";
@@ -83,9 +84,11 @@ export default function RootLayout({
         <ErrorBoundary>
           <SessionProvider>
             <AppProvider>
-              <NotificationProvider>
-                {children}
-              </NotificationProvider>
+              <ModeProvider>
+                <NotificationProvider>
+                  {children}
+                </NotificationProvider>
+              </ModeProvider>
             </AppProvider>
           </SessionProvider>
         </ErrorBoundary>
