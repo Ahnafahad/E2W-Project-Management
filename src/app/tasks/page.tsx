@@ -44,9 +44,10 @@ function TasksContent() {
   const [filterStatus, setFilterStatus] = useState<TaskStatus | 'ALL'>('ALL')
   const [filterPriority, setFilterPriority] = useState<TaskPriority | 'ALL'>('ALL')
   const [filterProject, setFilterProject] = useState<string>('ALL')
+  const [excludedProjects, setExcludedProjects] = useState<Set<string>>(new Set())
   const [hideCompleted, setHideCompleted] = useState(true)
-  const [sortField, setSortField] = useState<SortField>('created')
-  const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
+  const [sortField, setSortField] = useState<SortField>('due')
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
   const [showFilters, setShowFilters] = useState(false)
 
   // Filter and sort tasks
@@ -71,6 +72,9 @@ function TasksContent() {
       // Project filter
       if (filterProject !== 'ALL' && task.project !== filterProject) return false
 
+      // Excluded projects filter
+      if (excludedProjects.size > 0 && excludedProjects.has(task.project)) return false
+
       return true
     })
 
@@ -89,8 +93,12 @@ function TasksContent() {
           bValue = new Date(b.dates.created).getTime()
           break
         case 'due':
-          aValue = a.dates.due ? new Date(a.dates.due).getTime() : 0
-          bValue = b.dates.due ? new Date(b.dates.due).getTime() : 0
+          // Tasks without due dates sort to the end regardless of direction
+          if (!a.dates.due && !b.dates.due) return 0
+          if (!a.dates.due) return 1
+          if (!b.dates.due) return -1
+          aValue = new Date(a.dates.due).getTime()
+          bValue = new Date(b.dates.due).getTime()
           break
         case 'priority':
           const priorityOrder = { LOW: 1, MEDIUM: 2, HIGH: 3, URGENT: 4 }
@@ -112,7 +120,7 @@ function TasksContent() {
     })
 
     return filtered
-  }, [allTasks, searchQuery, filterStatus, filterPriority, filterProject, hideCompleted, sortField, sortDirection])
+  }, [allTasks, searchQuery, filterStatus, filterPriority, filterProject, excludedProjects, hideCompleted, sortField, sortDirection])
 
   // Group tasks by status for board view
   const tasksByStatus = useMemo(() => {
@@ -169,15 +177,28 @@ function TasksContent() {
     }
   }
 
+  const toggleExcludedProject = (projectId: string) => {
+    setExcludedProjects(prev => {
+      const next = new Set(prev)
+      if (next.has(projectId)) {
+        next.delete(projectId)
+      } else {
+        next.add(projectId)
+      }
+      return next
+    })
+  }
+
   const clearFilters = () => {
     setSearchQuery('')
     setFilterStatus('ALL')
     setFilterPriority('ALL')
     setFilterProject('ALL')
+    setExcludedProjects(new Set())
     setHideCompleted(true)
   }
 
-  const hasActiveFilters = searchQuery || filterStatus !== 'ALL' || filterPriority !== 'ALL' || filterProject !== 'ALL' || !hideCompleted
+  const hasActiveFilters = searchQuery || filterStatus !== 'ALL' || filterPriority !== 'ALL' || filterProject !== 'ALL' || excludedProjects.size > 0 || !hideCompleted
 
   return (
     <MainLayout>
@@ -348,6 +369,33 @@ function TasksContent() {
                     </Button>
                   </div>
                 </div>
+
+                {/* Exclude Projects */}
+                {projects.length > 0 && (
+                  <div className="mt-4 pt-4 border-t border-gray-100">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Filter out projects
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {projects.map(project => {
+                        const isExcluded = excludedProjects.has(project._id)
+                        return (
+                          <button
+                            key={project._id}
+                            onClick={() => toggleExcludedProject(project._id)}
+                            className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                              isExcluded
+                                ? 'bg-red-50 text-red-700 border-red-200 line-through'
+                                : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
+                            }`}
+                          >
+                            {project.name}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
 
                 <div className="mt-4 flex items-center">
                   <label className="flex items-center cursor-pointer">

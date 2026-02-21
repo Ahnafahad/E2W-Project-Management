@@ -121,11 +121,17 @@ function DashboardContent() {
     ]
   }, [allTasks])
 
-  // Get recent tasks (last 5 updated)
+  // Get upcoming tasks — earliest due date first
   const recentTasks = useMemo(() => {
     return allTasks
       .filter(task => task.status !== 'DONE')
-      .sort((a, b) => new Date(b.dates.updated).getTime() - new Date(a.dates.updated).getTime())
+      .sort((a, b) => {
+        // Tasks with due dates come first, sorted ascending
+        if (!a.dates.due && !b.dates.due) return 0
+        if (!a.dates.due) return 1
+        if (!b.dates.due) return -1
+        return new Date(a.dates.due).getTime() - new Date(b.dates.due).getTime()
+      })
       .slice(0, 5)
       .map(task => {
         const project = projects.find(p => p._id === task.project)
